@@ -640,7 +640,7 @@ function AlpineLakeBridge({
       />
 
       {/* 3D Botanical Arched Footbridge */}
-      {/* <BotanicalArchedBridge
+      <BotanicalArchedBridge
         isNight={isNight}
         sunsetFactor={sunsetFactor}
         directSunFactor={directSunFactor}
