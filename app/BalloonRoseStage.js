@@ -224,7 +224,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
             >
               <path d={balloonOutline} fill={theme} opacity="0.3" filter="blur(10px)" />
 
-              {/* Left Ear */}
               <circle
                 cx={x - r * 0.68}
                 cy={y - ry * 0.78}
@@ -241,7 +240,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 opacity="0.85"
               />
 
-              {/* Right Ear */}
               <circle
                 cx={x + r * 0.68}
                 cy={y - ry * 0.78}
@@ -258,7 +256,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 opacity="0.85"
               />
 
-              {/* Aerostat Base */}
               <path
                 d={balloonOutline}
                 fill="#ffffff"
@@ -266,7 +263,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 strokeWidth="2.5"
               />
 
-              {/* Left & Right Hot-Air Colored Ribs */}
               <path
                 d={`
                   M ${x - r * 0.24} ${y + ry * 0.92}
@@ -290,7 +286,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 opacity="0.55"
               />
 
-              {/* Glossy Sheen */}
               <ellipse
                 cx={x - r * 0.35}
                 cy={y - ry * 0.42}
@@ -300,7 +295,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 opacity="0.88"
               />
 
-              {/* Eye Patches */}
               <ellipse
                 cx={x - r * 0.32}
                 cy={y - ry * 0.04}
@@ -318,7 +312,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 fill="#1e293b"
               />
 
-              {/* Eyes */}
               {accessory === 'goggles' ? (
                 <>
                   <circle cx={x - r * 0.32} cy={y - ry * 0.04} r={r * 0.17} fill="#38bdf8" opacity="0.85" stroke="#fbbf24" strokeWidth="2" />
@@ -344,11 +337,9 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 </>
               )}
 
-              {/* Pink Cheeks */}
               <circle cx={x - r * 0.52} cy={y + ry * 0.18} r={r * 0.15} fill="#f472b6" opacity="0.65" />
               <circle cx={x + r * 0.52} cy={y + ry * 0.18} r={r * 0.15} fill="#f472b6" opacity="0.65" />
 
-              {/* Nose & Smile */}
               <ellipse cx={x} cy={y + ry * 0.14} rx={r * 0.10} ry={r * 0.07} fill="#0f172a" />
               <path
                 d={`M ${x - r * 0.13} ${y + ry * 0.22} Q ${x} ${y + ry * 0.29} ${x + r * 0.13} ${y + ry * 0.22}`}
@@ -358,7 +349,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 strokeLinecap="round"
               />
 
-              {/* Accessory */}
               {accessory === 'bamboo' && (
                 <g transform={`translate(${x - r * 0.05}, ${y + ry * 0.22}) rotate(25)`}>
                   <rect x="0" y="-3" width={r * 0.45} height="6" rx="2" fill="#10b981" />
@@ -397,7 +387,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 </g>
               )}
 
-              {/* Burner Collar & Flame */}
               <rect
                 x={x - r * 0.22}
                 y={y + ry * 0.92}
@@ -418,7 +407,6 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
         )}
       </AnimatePresence>
 
-      {/* Pop Starburst */}
       {popped && (
         <g>
           {confetti.map((piece, index) => (
@@ -456,7 +444,6 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
     <g transform={`translate(${cx}, ${cy})`}>
       <ellipse cx="0" cy={basketH / 2 + 18} rx={basketW * 0.55} ry="14" fill="#011611" opacity="0.6" filter="blur(8px)" />
 
-      {/* Pilot Mascot */}
       <g transform={`translate(0, ${-basketH / 2 + 6})`}>
         <ellipse cx="0" cy="-20" rx="34" ry="26" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1.5" />
         <ellipse cx="-26" cy="-42" rx="13" ry="11" fill="#1e293b" />
@@ -485,7 +472,6 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
         <circle cx="38" cy="-2" r="3" fill="#f472b6" opacity="0.6" />
       </g>
 
-      {/* Basket Body */}
       <rect
         x={-basketW / 2}
         y={-basketH / 2}
@@ -597,7 +583,415 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
 }
 
 /* ══════════════════════════════════════════════
-   3. BLOOMING LOTUS FLOWER
+   3. BASKET JIGSAW PUZZLE BOARD (STAGE 2)
+══════════════════════════════════════════════ */
+
+function PandaPuzzleGame({ onSolved }) {
+  const [boardSlots, setBoardSlots] = useState([null, null, null, null, null, null])
+  const [trayPieces, setTrayPieces] = useState(() => {
+    return [3, 0, 5, 1, 4, 2].map((id) => ({ id }))
+  })
+  const [selectedPiece, setSelectedPiece] = useState(null)
+  const [showHint, setShowHint] = useState(false)
+  const [isSolved, setIsSolved] = useState(false)
+
+  useEffect(() => {
+    const allFilled = boardSlots.every((p, idx) => p !== null && p.id === idx)
+    if (allFilled && !isSolved) {
+      setIsSolved(true)
+      setTimeout(() => {
+        onSolved?.()
+      }, 2400)
+    }
+  }, [boardSlots, isSolved, onSolved])
+
+  const handleTrayPieceClick = (index) => {
+    if (isSolved) return
+    const piece = trayPieces[index]
+    if (selectedPiece && selectedPiece.source === 'tray' && selectedPiece.index === index) {
+      setSelectedPiece(null)
+    } else {
+      setSelectedPiece({ source: 'tray', index, piece })
+    }
+  }
+
+  const handleBoardSlotClick = (slotIdx) => {
+    if (isSolved) return
+    const currentInSlot = boardSlots[slotIdx]
+
+    if (selectedPiece) {
+      if (selectedPiece.source === 'tray') {
+        const newBoard = [...boardSlots]
+        const newTray = [...trayPieces]
+        newTray.splice(selectedPiece.index, 1)
+
+        if (currentInSlot) {
+          newTray.push(currentInSlot)
+        }
+
+        newBoard[slotIdx] = selectedPiece.piece
+        setBoardSlots(newBoard)
+        setTrayPieces(newTray)
+        setSelectedPiece(null)
+      } else if (selectedPiece.source === 'board') {
+        const newBoard = [...boardSlots]
+        const fromSlot = selectedPiece.index
+        newBoard[fromSlot] = currentInSlot
+        newBoard[slotIdx] = selectedPiece.piece
+
+        setBoardSlots(newBoard)
+        setSelectedPiece(null)
+      }
+    } else {
+      if (currentInSlot) {
+        setSelectedPiece({ source: 'board', index: slotIdx, piece: currentInSlot })
+      }
+    }
+  }
+
+  const handleReturnToTray = (slotIdx, e) => {
+    e.stopPropagation()
+    if (isSolved) return
+    const piece = boardSlots[slotIdx]
+    if (!piece) return
+
+    const newBoard = [...boardSlots]
+    newBoard[slotIdx] = null
+    setBoardSlots(newBoard)
+    setTrayPieces((prev) => [...prev, piece])
+    if (selectedPiece && selectedPiece.source === 'board' && selectedPiece.index === slotIdx) {
+      setSelectedPiece(null)
+    }
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        maxWidth: '680px',
+        margin: '0 auto',
+        padding: '12px',
+        boxSizing: 'border-box',
+        userSelect: 'none',
+      }}
+    >
+      <div style={{ textAlign: 'center', marginBottom: '12px' }}>
+        <h3
+          style={{
+            margin: '0 0 4px 0',
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 'clamp(1.4rem, 3.4vw, 2.2rem)',
+            fontWeight: 800,
+            background: 'linear-gradient(135deg, #fef08a, #fbbf24, #34d399)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.4))',
+          }}
+        >
+          {isSolved ? '🎉 Safe Landing! Queen Panda Solved! 👑' : '🧺 Hot-Air Basket Jigsaw 🧩'}
+        </h3>
+        <p
+          style={{
+            margin: 0,
+            fontFamily: "'Dancing Script', cursive",
+            fontSize: 'clamp(1rem, 2.2vw, 1.35rem)',
+            color: '#a7f3d0',
+            fontWeight: 700,
+          }}
+        >
+          {isSolved
+            ? 'Basket safely utar gayi Badi Sis! Sabse smart pilot! 🥰💖'
+            : 'Assemble the 6 pieces from the basket to reveal Queen Panda!'}
+        </p>
+      </div>
+
+      <div
+        style={{
+          position: 'relative',
+          width: 'min(94vw, 540px)',
+          aspectRatio: '3 / 2',
+          background: 'linear-gradient(145deg, #022c22, #011611)',
+          border: '3.5px solid #d97706',
+          borderRadius: '16px',
+          boxShadow:
+            '0 20px 50px rgba(0,0,0,0.7), 0 0 0 2px rgba(251,191,36,0.35), inset 0 0 25px rgba(16,185,129,0.25)',
+          padding: '6px',
+          boxSizing: 'border-box',
+          overflow: 'hidden',
+        }}
+      >
+        <AnimatePresence>
+          {isSolved && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              style={{
+                position: 'absolute',
+                inset: 6,
+                zIndex: 10,
+                borderRadius: '10px',
+                overflow: 'hidden',
+                boxShadow: '0 0 30px rgba(251,191,36,0.6)',
+              }}
+            >
+              <FullPandaArtwork />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gridTemplateRows: 'repeat(2, 1fr)',
+            gap: '4px',
+            width: '100%',
+            height: '100%',
+          }}
+        >
+          {boardSlots.map((piece, slotIdx) => {
+            const isCorrect = piece !== null && piece.id === slotIdx
+            const isSlotSelected =
+              selectedPiece && selectedPiece.source === 'board' && selectedPiece.index === slotIdx
+
+            return (
+              <div
+                key={slotIdx}
+                onClick={() => handleBoardSlotClick(slotIdx)}
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  cursor: isSolved ? 'default' : 'pointer',
+                  border: isSlotSelected
+                    ? '2.5px solid #fef08a'
+                    : isCorrect
+                    ? '2px solid #34d399'
+                    : '1.5px dashed rgba(16,185,129,0.4)',
+                  boxShadow: isSlotSelected
+                    ? '0 0 16px #fbbf24'
+                    : isCorrect
+                    ? '0 0 8px rgba(52,211,153,0.5)'
+                    : 'none',
+                  background: 'rgba(6, 78, 59, 0.45)',
+                  transition: 'all 0.25s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                {(showHint || !piece) && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      opacity: showHint ? 0.45 : 0.18,
+                      filter: showHint ? 'none' : 'grayscale(100%)',
+                      pointerEvents: 'none',
+                      transition: 'opacity 0.3s ease',
+                    }}
+                  >
+                    <PandaPuzzleTile pieceId={slotIdx} />
+                  </div>
+                )}
+
+                {!piece && !showHint && (
+                  <span
+                    style={{
+                      fontSize: 'clamp(14px, 2.5vw, 20px)',
+                      fontWeight: 800,
+                      color: 'rgba(167,243,208,0.5)',
+                      fontFamily: 'sans-serif',
+                    }}
+                  >
+                    {slotIdx + 1}
+                  </span>
+                )}
+
+                {piece && (
+                  <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                    <PandaPuzzleTile pieceId={piece.id} />
+
+                    {isCorrect && !isSolved && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          width: '18px',
+                          height: '18px',
+                          borderRadius: '50%',
+                          background: '#10b981',
+                          color: '#ffffff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '11px',
+                          fontWeight: 900,
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+                        }}
+                      >
+                        ✓
+                      </div>
+                    )}
+
+                    {!isSolved && !isCorrect && (
+                      <button
+                        onClick={(e) => handleReturnToTray(slotIdx, e)}
+                        title="Return to tray"
+                        style={{
+                          position: 'absolute',
+                          top: 4,
+                          right: 4,
+                          width: '20px',
+                          height: '20px',
+                          borderRadius: '50%',
+                          background: 'rgba(239,68,68,0.85)',
+                          color: '#ffffff',
+                          border: 'none',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '11px',
+                          fontWeight: 900,
+                          lineHeight: 1,
+                        }}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {!isSolved && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: 'min(94vw, 540px)',
+            margin: '10px 0 6px 0',
+            padding: '0 4px',
+            boxSizing: 'border-box',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 'clamp(0.85rem, 1.8vw, 1.05rem)',
+              color: '#fde68a',
+              fontFamily: "'Dancing Script', cursive",
+              fontWeight: 700,
+            }}
+          >
+            🧺 Pieces in basket tray: {trayPieces.length}
+          </span>
+
+          <button
+            onClick={() => setShowHint((prev) => !prev)}
+            style={{
+              background: showHint ? '#fbbf24' : 'rgba(16,185,129,0.3)',
+              color: showHint ? '#78350f' : '#a7f3d0',
+              border: '1px solid #10b981',
+              borderRadius: '20px',
+              padding: '4px 14px',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              transition: 'all 0.25s ease',
+            }}
+          >
+            💡 {showHint ? 'Hide Hint' : 'Peek Hint'}
+          </button>
+        </div>
+      )}
+
+      {!isSolved && trayPieces.length > 0 && (
+        <div
+          style={{
+            width: 'min(94vw, 540px)',
+            background: 'rgba(2, 44, 34, 0.75)',
+            border: '1.5px solid rgba(217,119,6,0.5)',
+            borderRadius: '14px',
+            padding: '10px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+          }}
+        >
+          {trayPieces.map((piece, index) => {
+            const isPieceSelected =
+              selectedPiece && selectedPiece.source === 'tray' && selectedPiece.index === index
+
+            return (
+              <motion.div
+                key={piece.id}
+                onClick={() => handleTrayPieceClick(index)}
+                whileHover={{ scale: 1.06 }}
+                whileTap={{ scale: 0.95 }}
+                animate={isPieceSelected ? { y: -6, scale: 1.08 } : { y: 0, scale: 1 }}
+                style={{
+                  width: 'clamp(55px, 12vw, 75px)',
+                  aspectRatio: '1 / 1',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  border: isPieceSelected
+                    ? '3px solid #fef08a'
+                    : '1.5px solid rgba(251,191,36,0.6)',
+                  boxShadow: isPieceSelected
+                    ? '0 0 18px #fbbf24, 0 8px 16px rgba(0,0,0,0.6)'
+                    : '0 4px 10px rgba(0,0,0,0.4)',
+                  background: '#011611',
+                  transition: 'border 0.2s ease, box-shadow 0.2s ease',
+                  position: 'relative',
+                }}
+              >
+                <PandaPuzzleTile pieceId={piece.id} />
+                <span
+                  style={{
+                    position: 'absolute',
+                    bottom: 2,
+                    right: 4,
+                    fontSize: '9px',
+                    fontWeight: 900,
+                    color: '#fef08a',
+                    background: 'rgba(0,0,0,0.6)',
+                    padding: '1px 4px',
+                    borderRadius: '4px',
+                  }}
+                >
+                  P{piece.id + 1}
+                </span>
+              </motion.div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════
+   4. BLOOMING LOTUS FLOWER
 ══════════════════════════════════════════════ */
 
 function Lotus({ cx, cy, scale = 1, onComplete }) {
@@ -684,7 +1078,7 @@ function Lotus({ cx, cy, scale = 1, onComplete }) {
 }
 
 /* ══════════════════════════════════════════════
-   4. MAIN STAGE ORCHESTRATOR
+   5. MAIN STAGE ORCHESTRATOR
 ══════════════════════════════════════════════ */
 
 export default function BalloonRoseStage({ onComplete }) {
@@ -694,7 +1088,7 @@ export default function BalloonRoseStage({ onComplete }) {
   const [stage, setStage] = useState('balloons')
 
   const basketX = sw / 2
-  const basketY = sh * 0.58
+  const basketY = sh * 0.64
   const basketAnchorX = basketX
   const basketAnchorY = basketY - 60
 
@@ -703,7 +1097,7 @@ export default function BalloonRoseStage({ onComplete }) {
   useEffect(() => {
     if (allPopped && stage === 'balloons') {
       const timer = setTimeout(() => {
-        setStage('shayari')
+        setStage('puzzle')
       }, 1000)
       return () => clearTimeout(timer)
     }
@@ -760,7 +1154,24 @@ export default function BalloonRoseStage({ onComplete }) {
         </svg>
       )}
 
-      {/* ── SHAYARI LETTER ── */}
+      {/* ── STAGE 2: 6-PIECE PANDA JIGSAW BOARD ── */}
+      {stage === 'puzzle' && (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+          }}
+        >
+          <PandaPuzzleGame onSolved={() => setStage('shayari')} />
+        </div>
+      )}
+
+      {/* ── STAGE 3: SHAYARI LETTER ── */}
       {stage === 'shayari' && (
         <motion.div
           initial={{ opacity: 0, scale: 0.85, y: 30 }}
@@ -841,34 +1252,30 @@ export default function BalloonRoseStage({ onComplete }) {
         </svg>
       )}
 
-      {/* ── BOTTOM BANNER MESSAGE ── */}
+      {/* ── TOP BANNER MESSAGE ── */}
       {stage === 'balloons' && (
         <div
           style={{
             position: 'absolute',
-            bottom: 'clamp(1rem, 3vh, 2.4rem)',
+            top: '1.5rem',
             left: '50%',
             transform: 'translateX(-50%)',
             textAlign: 'center',
             pointerEvents: 'none',
             userSelect: 'none',
             zIndex: 2,
-            width: 'min(94vw, 920px)',
-            padding: '0 12px',
-            boxSizing: 'border-box',
+            width: 'min(96vw, 980px)',
           }}
         >
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             style={{
-              margin: 0,
-              color: 'rgba(255,255,255,0.96)',
-              fontSize: 'clamp(1.05rem, 2.2vw, 1.85rem)',
+              color: 'rgba(255,255,255,0.95)',
+              fontSize: 'clamp(1.15rem, 2.4vw, 1.95rem)',
               fontFamily: "'Dancing Script', cursive",
               fontWeight: 700,
-              textShadow: '0 2px 14px rgba(0,0,0,0.6)',
-              lineHeight: 1.4,
+              textShadow: '0 2px 14px rgba(0,0,0,0.5)',
             }}
           >
             Gg🐼! Saare 6 Panda Hot-Air Balloons ko tap karke basket ko safe utaro! 🎈🧺 — Har balloon me chhipa hai 1 puzzle piece! 🧩
