@@ -125,21 +125,13 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   useEffect(() => {
     let animId
     let lastStamp = performance.now()
-    let accum = 0
 
     const step = (now) => {
       const delta = (now - lastStamp) / 1000
       lastStamp = now
 
-      // Pause ambient re-renders during active celestial drag for locked 60/120 FPS
-      if (!draggingRef.current) {
-        accum += delta
-        // Throttle ambient wildlife animations to ~25 FPS (0.04s) to eliminate background re-render churn
-        if (accum >= 0.04) {
-          setSimTick((prev) => prev + accum)
-          accum = 0
-        }
-      }
+      // Uninterrupted fluid animation for clouds, flying birds, insects, and water ripples
+      setSimTick((prev) => prev + delta)
       animId = requestAnimationFrame(step)
     }
 
