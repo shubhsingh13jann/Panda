@@ -289,25 +289,25 @@ function SingleApple({ position, scale = 0.16, phase = 0, isNight, onInspect }) 
 function TreeApples({ isNight, onInspect }) {
   const apples = [
     // 1. Far lower left branch
-    { pos: [-1.65, 0.35, 0.85], scale: 0.30, phase: 0.2 },
+    { pos: [-1.65, 0.35, 0.85], scale: 0.15, phase: 0.2 },
     // 2. Mid-low left hanging
-    { pos: [-1.25, 0.55, 1.10], scale: 0.32, phase: 1.1 },
+    { pos: [-1.25, 0.55, 1.10], scale: 0.16, phase: 1.1 },
     // 3. Mid-left outer canopy
-    { pos: [-1.40, 1.25, 1.15], scale: 0.32, phase: 2.1 },
+    { pos: [-1.40, 1.25, 1.15], scale: 0.16, phase: 2.1 },
     // 4. Upper-left canopy cluster
-    { pos: [-0.90, 2.05, 1.45], scale: 0.32, phase: 3.0 },
+    { pos: [-0.90, 2.05, 1.45], scale: 0.16, phase: 3.0 },
     // 5. Lower-center-left hanging (clear of trunk and owl)
-    { pos: [-0.45, 0.65, 1.40], scale: 0.34, phase: 3.8 },
+    { pos: [-0.45, 0.65, 1.40], scale: 0.17, phase: 3.8 },
     // 6. Mid front-left foliage
-    { pos: [-0.55, 1.40, 1.95], scale: 0.34, phase: 4.6 },
+    { pos: [-0.55, 1.40, 1.95], scale: 0.17, phase: 4.6 },
     // 7. High-center peak canopy
-    { pos: [0.15, 2.25, 1.50], scale: 0.34, phase: 5.3 },
+    { pos: [0.15, 2.25, 1.50], scale: 0.17, phase: 5.3 },
     // 8. Mid front-center foliage
-    { pos: [0.45, 1.45, 1.95], scale: 0.32, phase: 0.9 },
+    { pos: [0.45, 1.45, 1.95], scale: 0.16, phase: 0.9 },
     // 9. High-right bough
-    { pos: [0.85, 1.85, 1.35], scale: 0.30, phase: 1.8 },
+    { pos: [0.85, 1.85, 1.35], scale: 0.15, phase: 1.8 },
     // 10. Upper-right bough (well above owl at Y=0.28, completely uncrowded!)
-    { pos: [1.65, 1.15, 1.05], scale: 0.30, phase: 2.7 },
+    { pos: [1.65, 1.15, 1.05], scale: 0.15, phase: 2.7 },
   ]
 
   return (
