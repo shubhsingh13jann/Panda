@@ -198,7 +198,7 @@ function RealisticMountainRange({
       <polygon points="1702,326 1710,320 1720,328" fill={mtnLight.midSnow} opacity="0.65" />
 
       {/* Atmospheric Valley Mist (Layer 1.5) */}
-      <rect x="-400" y="420" width="2400" height="55" fill="url(#mtnValleyMistGrad)" opacity="0.65" />
+      <rect x="-600" y="420" width="2800" height="55" fill="url(#mtnValleyMistGrad)" opacity="0.65" />
 
       {/* ── 2. MIDGROUND MOUNTAIN MASSIFS (RISING IN SADDLES & VALLEYS) ── */}
       <g id="midground-mountain-massifs" opacity="0.92">
