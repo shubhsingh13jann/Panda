@@ -21,17 +21,17 @@ function CelestialSky({
 }) {
   return (
     <g id="celestial-sky-layer">
-        {/* ── 1. SKY BACKGROUND (WIDE BLEED: X: -400 to 2000) ── */}
-        <rect x="-400" y="0" width="2400" height="560" fill="url(#skyDayGrad)" />
+        {/* ── 1. SKY BACKGROUND (WIDE BLEED: X: -600 to 2200, Y: -400 to 560) ── */}
+        <rect x="-600" y="-400" width="2800" height="960" fill="url(#skyDayGrad)" />
         <rect
-          x="-400"
-          y="0"
-          width="2400"
-          height="560"
+          x="-600"
+          y="-400"
+          width="2800"
+          height="960"
           fill="url(#skySunsetGrad)"
           opacity={sunsetFactor * (1 - nightFactor)}
         />
-        <rect x="-400" y="0" width="2400" height="560" fill="url(#skyNightGrad)" opacity={nightFactor} />
+        <rect x="-600" y="-400" width="2800" height="960" fill="url(#skyNightGrad)" opacity={nightFactor} />
 
         {/* ── 2. NIGHT STARS ── */}
         {isNight && (

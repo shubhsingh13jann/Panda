@@ -112,15 +112,15 @@ function DriftingClouds({ simTick, sunsetFactor, isNight, nightFactor }) {
   // Beautifully orchestrated clouds drifting serenely across the sky at varied gentle speeds
   // Simulating atmospheric depth, slow natural wind, and gentle mountain buoyancy
   const clouds = [
-    { id: 'cloud-1', startX: 100, baseY: 85, speed: 6.0, variant: 'wisp', scale: 0.85, phase: 0 },
-    { id: 'cloud-2', startX: 580, baseY: 130, speed: 8.5, variant: 'tower', scale: 1.15, phase: 1.5 },
-    { id: 'cloud-3', startX: 1080, baseY: 95, speed: 7.2, variant: 'wide', scale: 1.0, phase: 3.2 },
-    { id: 'cloud-4', startX: 1560, baseY: 145, speed: 10.0, variant: 'wisp', scale: 0.8, phase: 4.8 },
-    { id: 'cloud-5', startX: 2020, baseY: 110, speed: 7.8, variant: 'tower', scale: 0.92, phase: 2.4 },
+    { id: 'cloud-1', startX: 100, baseY: 95, speed: 6.0, variant: 'wisp', scale: 0.85, phase: 0 },
+    { id: 'cloud-2', startX: 680, baseY: 135, speed: 8.5, variant: 'tower', scale: 1.15, phase: 1.5 },
+    { id: 'cloud-3', startX: 1240, baseY: 105, speed: 7.2, variant: 'wide', scale: 1.0, phase: 3.2 },
+    { id: 'cloud-4', startX: 1780, baseY: 148, speed: 10.0, variant: 'wisp', scale: 0.8, phase: 4.8 },
+    { id: 'cloud-5', startX: 2320, baseY: 118, speed: 7.8, variant: 'tower', scale: 0.92, phase: 2.4 },
   ]
 
-  const totalSpan = 2400
-  const offset = 400
+  const totalSpan = 2800
+  const offset = 600
 
   return (
     <g id="drifting-clouds" pointerEvents="none" opacity={1 - nightFactor * 0.72}>
