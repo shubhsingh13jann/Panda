@@ -1034,7 +1034,7 @@ function RedDeerFamily({ isNight, isDeerDrinking, onInspect }) {
             </g>
           ) : (
             /* ── NIGHTTIME BEDDED BABY FAWN (COZY & GROUNDED ON TURF BESIDE STAG) ── */
-            <g id="nighttime-bedded-fawn" style={{ display: "none" }}" transform="translate(70, 52) scale(0.60)">
+            <g id="nighttime-bedded-fawn" transform="translate(70, 52) scale(0.60)">
               {/* Soft Ambient Ground Shadow under Fawn: Anchors firmly to cy=74 */}
               <ellipse cx="2" cy="35" rx="28" ry="6" fill="#020804" opacity="0.60" filter="blur(2.5px)" />
               {/* Curled Body in Sternal Repose */}
