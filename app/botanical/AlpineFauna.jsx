@@ -768,7 +768,7 @@ function RedDeerFamily({ isNight, isDeerDrinking, onInspect }) {
             </g>
           ) : (
             /* ── NIGHTTIME BEDDED STAG (STERNAL RECUMBENCY FIRMLY ON GROUND, VISIBLE FOLDED LEGS & MOONLIT ANTLERS) ── */
-            <g id="nighttime-bedded-stag" style={{ display: "none" }}>
+            <g id="nighttime-bedded-stag">
               {/* Soft Ambient Ground Contact Shadow: Anchors the entire resting deer solidly to the turf */}
               <ellipse cx="6" cy="74" rx="52" ry="7.5" fill="#020804" opacity="0.65" filter="blur(3.5px)" />
               <ellipse cx="14" cy="74" rx="26" ry="5.0" fill="#010402" opacity="0.75" filter="blur(2px)" />
