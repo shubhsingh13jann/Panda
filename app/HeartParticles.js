@@ -52,6 +52,7 @@ export default function HeartParticles({ style = {} }) {
     window.addEventListener('resize', resize)
 
     const sparks = []
+    const floatingEmbers = []
     const shockwaves = []
     const startTs = performance.now()
     const TRACE_DURATION = 1800
@@ -61,9 +62,12 @@ export default function HeartParticles({ style = {} }) {
     const PALETTE = [
       { r: 16, g: 185, b: 129 },  // emerald #10b981
       { r: 52, g: 211, b: 153 },  // mint #34d399
-      { r: 251, g: 191, b: 36 },  // gold #fbbf24
+      { r: 251, g: 191, b: 36 },  // warm gold #fbbf24
       { r: 255, g: 255, b: 255 }, // pure white
+      { r: 244, g: 114, b: 182 }, // blush rose #f472b6
     ]
+
+    const FLOATING_ICONS = ['✨', '🎋', '💚', '🌸', '✨']
 
     const spawnSpark = (x, y, vx, vy, color, size = 2) => {
       sparks.push({
@@ -75,6 +79,28 @@ export default function HeartParticles({ style = {} }) {
         color,
         life: 1,
         decay: Math.random() * 0.02 + 0.015,
+      })
+    }
+
+    const spawnFloatingEmber = (targetX, targetY) => {
+      if (floatingEmbers.length >= 28) return
+      const isEmoji = Math.random() > 0.45
+      const icon = FLOATING_ICONS[Math.floor(Math.random() * FLOATING_ICONS.length)]
+      const color = PALETTE[Math.floor(Math.random() * PALETTE.length)]
+
+      floatingEmbers.push({
+        x: targetX + (Math.random() - 0.5) * 40,
+        y: targetY + (Math.random() - 0.5) * 40,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: -0.4 - Math.random() * 0.8,
+        swayPhase: Math.random() * Math.PI * 2,
+        swaySpeed: 0.03 + Math.random() * 0.02,
+        size: isEmoji ? 13 : 2.5 + Math.random() * 2.5,
+        isEmoji,
+        icon,
+        color,
+        life: 1,
+        decay: 0.008 + Math.random() * 0.008,
       })
     }
 
@@ -92,14 +118,14 @@ export default function HeartParticles({ style = {} }) {
     }
 
     const drawHeartRibbon = (currentScale, traceProgress, alpha = 1) => {
-      const steps = 80
+      const steps = 90
       const count = Math.floor(steps * traceProgress)
       if (count < 2) return
 
       const passes = [
-        { width: 14, color: `rgba(16, 185, 129, ${0.22 * alpha})`, blur: 16 },
-        { width: 6,  color: `rgba(52, 211, 153, ${0.65 * alpha})`, blur: 8 },
-        { width: 2.2, color: `rgba(255, 255, 255, ${0.92 * alpha})`, blur: 0 },
+        { width: 15, color: `rgba(16, 185, 129, ${0.22 * alpha})`, blur: 18 },
+        { width: 6.5, color: `rgba(52, 211, 153, ${0.68 * alpha})`, blur: 9 },
+        { width: 2.4, color: `rgba(255, 255, 255, ${0.94 * alpha})`, blur: 0 },
       ]
 
       passes.forEach((pass) => {
@@ -109,7 +135,7 @@ export default function HeartParticles({ style = {} }) {
         ctx.lineWidth = pass.width
         ctx.strokeStyle = pass.color
         if (pass.blur > 0) {
-          ctx.shadowColor = 'rgba(52, 211, 153, 0.8)'
+          ctx.shadowColor = 'rgba(52, 211, 153, 0.85)'
           ctx.shadowBlur = pass.blur
         }
 
@@ -142,7 +168,7 @@ export default function HeartParticles({ style = {} }) {
       const elapsed = now - startTs
       const traceProgress = Math.min(elapsed / TRACE_DURATION, 1)
 
-      // Double-pulse heartbeat rhythm
+      // Double-pulse heartbeat breathing rhythm
       let heartbeatScale = 1
       if (traceProgress >= 1) {
         const cycle = ((elapsed - TRACE_DURATION) / 1300) % 1
@@ -154,11 +180,11 @@ export default function HeartParticles({ style = {} }) {
         }
         heartbeatScale = 1 + beat
 
-        // Trigger subtle wave on big contraction peak
+        // Trigger subtle aura wave on main heartbeat peak
         const isPeaking = beat > 0.048
         if (isPeaking && !lastBeatPulse) {
           const tip = getHeartPoint(0, cx, cy, baseScale * heartbeatScale)
-          spawnShockwave(tip.x, tip.y, 90, 'rgba(251, 191, 36, 0.65)')
+          spawnShockwave(tip.x, tip.y, 95, 'rgba(251, 191, 36, 0.65)')
         }
         lastBeatPulse = isPeaking
       }
@@ -166,7 +192,7 @@ export default function HeartParticles({ style = {} }) {
       const currentScale = baseScale * heartbeatScale
       ctx.clearRect(0, 0, width, height)
 
-      // Dual-comet trailing sparks during trace
+      // Dual-comet trailing sparks during tracing phase
       if (traceProgress < 1) {
         const tRight = Math.PI - traceProgress * Math.PI
         const tLeft = Math.PI + traceProgress * Math.PI
@@ -178,8 +204,13 @@ export default function HeartParticles({ style = {} }) {
           spawnSpark(pt2.x, pt2.y, (Math.random() - 0.5) * 1.5, -0.8, PALETTE[2], 2.8)
           spawnSpark(pt1.x, pt1.y, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, PALETTE[3], 1.8)
         }
+
+        if (Math.random() < 0.25) {
+          spawnFloatingEmber(pt1.x, pt1.y)
+          spawnFloatingEmber(pt2.x, pt2.y)
+        }
       } else if (!tipShockwaveTriggered) {
-        // Shockwave when comets merge at the bottom tip
+        // Shockwave burst when comets merge at the bottom tip
         const tip = getHeartPoint(0, cx, cy, currentScale)
         spawnShockwave(tip.x, tip.y, 160, 'rgba(52, 211, 153, 0.85)')
         spawnShockwave(tip.x, tip.y, 220, 'rgba(251, 191, 36, 0.7)')
@@ -191,7 +222,14 @@ export default function HeartParticles({ style = {} }) {
         tipShockwaveTriggered = true
       }
 
-      // Draw multi-pass heart ribbon
+      // Sporadically spawn floating bamboo & stardust embers along perimeter
+      if (traceProgress >= 1 && Math.random() < 0.12) {
+        const randT = Math.random() * Math.PI * 2
+        const pt = getHeartPoint(randT, cx, cy, currentScale)
+        spawnFloatingEmber(pt.x, pt.y)
+      }
+
+      // Draw glowing heart ribbon
       drawHeartRibbon(currentScale, traceProgress)
 
       // Shockwave rings
@@ -216,7 +254,38 @@ export default function HeartParticles({ style = {} }) {
         ctx.restore()
       }
 
-      // Render sparks
+      // Floating bamboo embers & cute icons
+      for (let i = floatingEmbers.length - 1; i >= 0; i--) {
+        const fe = floatingEmbers[i]
+        fe.swayPhase += fe.swaySpeed
+        fe.x += Math.sin(fe.swayPhase) * 0.7 + fe.vx
+        fe.y += fe.vy
+        fe.life -= fe.decay
+
+        if (fe.life <= 0) {
+          floatingEmbers.splice(i, 1)
+          continue
+        }
+
+        ctx.save()
+        ctx.globalAlpha = Math.max(0, Math.min(1, fe.life))
+        if (fe.isEmoji) {
+          ctx.font = `${fe.size}px sans-serif`
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(fe.icon, fe.x, fe.y)
+        } else {
+          ctx.fillStyle = `rgba(${fe.color.r}, ${fe.color.g}, ${fe.color.b}, ${fe.life})`
+          ctx.shadowColor = `rgba(${fe.color.r}, ${fe.color.g}, ${fe.color.b}, 0.8)`
+          ctx.shadowBlur = 6
+          ctx.beginPath()
+          ctx.arc(fe.x, fe.y, fe.size, 0, Math.PI * 2)
+          ctx.fill()
+        }
+        ctx.restore()
+      }
+
+      // Fast firefly sparks
       for (let i = sparks.length - 1; i >= 0; i--) {
         const p = sparks[i]
         p.x += p.vx
@@ -233,7 +302,7 @@ export default function HeartParticles({ style = {} }) {
         ctx.save()
         ctx.fillStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.life})`
         ctx.shadowColor = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, 0.8)`
-        ctx.shadowBlur = 4
+        ctx.shadowBlur = 5
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2)
         ctx.fill()
