@@ -625,10 +625,10 @@ function AlpineLakeBridge({
     <g id="alpine-lake-and-bridge">
       {/* Calm Deep Blue Lake Water Basin (Wide Bleed) */}
       <rect
-        x="-600"
+        x="-400"
         y="460"
-        width="2800"
-        height="740"
+        width="2400"
+        height="440"
         fill={isNight ? 'url(#lakeNightDepthGrad)' : 'url(#lakeDepthGrad)'}
         onClick={onLakeClick}
         style={{ cursor: 'pointer' }}

@@ -18,13 +18,11 @@ import EcologyModal from './botanical/EcologyModal'
 export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   const [isPortraitMobile, setIsPortraitMobile] = useState(false)
   const [orientationDismissed, setOrientationDismissed] = useState(false)
-  const [viewBox, setViewBox] = useState('0 0 1600 900')
-  const viewBoxRef = useRef({ minX: 0, minY: 0, width: 1600, height: 900 })
 
-  // ── CELESTIAL FREE 2D POSITIONS IN MASTER CANVAS ──
+  // ── CELESTIAL FREE 2D POSITIONS IN 1600x900 MASTER CANVAS ──
   // User can drag the Sun or Moon freely in 2D anywhere in the sky bi-directionally!
-  const [sunPos, setSunPos] = useState({ x: 380, y: 145 })
-  const [moonPos, setMoonPos] = useState({ x: 380, y: 155 })
+  const [sunPos, setSunPos] = useState({ x: 380, y: 175 })
+  const [moonPos, setMoonPos] = useState({ x: 380, y: 175 })
   const [isNightMode, setIsNightMode] = useState(false)
   const [isDraggingSun, setIsDraggingSun] = useState(false)
   const [isDraggingMoon, setIsDraggingMoon] = useState(false)
@@ -34,8 +32,8 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   const [showInfoBanner, setShowInfoBanner] = useState(true)
   const infoTimeoutRef = useRef(null)
 
-  const sunPosRef = useRef({ x: 380, y: 145 })
-  const moonPosRef = useRef({ x: 380, y: 155 })
+  const sunPosRef = useRef({ x: 380, y: 175 })
+  const moonPosRef = useRef({ x: 380, y: 175 })
   const isNightModeRef = useRef(false)
   const isPortraitMobileRef = useRef(false)
 
@@ -108,60 +106,20 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   }, [])
 
   useEffect(() => {
-    const updateDimensions = () => {
-      if (typeof window === 'undefined') return
-      const w = window.innerWidth || sw || 1600
-      const h = window.innerHeight || sh || 900
-      const isMobile = w < 850
-      const isPortrait = h > w
+    const evaluateOrientation = () => {
+      const isMobile = window.innerWidth < 850
+      const isPortrait = window.innerHeight > window.innerWidth
       setIsPortraitMobile(isMobile && isPortrait)
-
-      const ar = w / Math.max(1, h)
-      const baseW = 1600
-      const baseH = 900
-      const targetAr = baseW / baseH // ~1.7778
-
-      let minX = 0
-      let minY = 0
-      let vbWidth = baseW
-      let vbHeight = baseH
-
-      if (isMobile && isPortrait) {
-        // Mobile portrait: keep 1600x900 meet view so billboard and valley remain clean
-        minX = 0
-        minY = 0
-        vbWidth = baseW
-        vbHeight = baseH
-      } else if (ar >= targetAr) {
-        // Landscape & ultra-wide screens (e.g. 16:9, 16:10, 20:9, 21:9):
-        // Keep vertical height fixed at 900 so top sky and bottom meadow are NEVER sliced!
-        // Expand horizontal width to match the exact aspect ratio of the device.
-        vbHeight = baseH
-        vbWidth = Math.round(baseH * ar)
-        minX = Math.round((baseW - vbWidth) / 2)
-        minY = 0
-      } else {
-        // Screens narrower than 16:9 (e.g. iPad 4:3, 3:2 tablets):
-        // Keep width fixed at 1600 so entire valley (tree, bridge, deer) is visible.
-        // Expand vertical height slightly with minY centered.
-        vbWidth = baseW
-        vbHeight = Math.round(baseW / ar)
-        minX = 0
-        minY = Math.round((baseH - vbHeight) / 2)
-      }
-
-      viewBoxRef.current = { minX, minY, width: vbWidth, height: vbHeight }
-      setViewBox(`${minX} ${minY} ${vbWidth} ${vbHeight}`)
     }
 
-    updateDimensions()
-    window.addEventListener('resize', updateDimensions)
-    window.addEventListener('orientationchange', updateDimensions)
+    evaluateOrientation()
+    window.addEventListener('resize', evaluateOrientation)
+    window.addEventListener('orientationchange', evaluateOrientation)
     return () => {
-      window.removeEventListener('resize', updateDimensions)
-      window.removeEventListener('orientationchange', updateDimensions)
+      window.removeEventListener('resize', evaluateOrientation)
+      window.removeEventListener('orientationchange', evaluateOrientation)
     }
-  }, [sw, sh])
+  }, [])
 
   // ── CONTINUOUS TICK FOR WATER RIPPLES, WINGS & WILDLIFE ──
   useEffect(() => {
@@ -297,20 +255,19 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       }
     } catch (_) {}
 
-    // Robust mathematical fallback using active viewBox
+    // Robust mathematical fallback for preserveAspectRatio
     const rect = svgRef.current.getBoundingClientRect()
-    const vb = viewBoxRef.current || { minX: 0, minY: 0, width: 1600, height: 900 }
-    const w = rect.width || (typeof window !== 'undefined' ? window.innerWidth : vb.width)
-    const h = rect.height || (typeof window !== 'undefined' ? window.innerHeight : vb.height)
+    const w = rect.width || (typeof window !== 'undefined' ? window.innerWidth : 1600)
+    const h = rect.height || (typeof window !== 'undefined' ? window.innerHeight : 900)
     const isPortrait = isPortraitMobileRef.current
-    const scale = isPortrait ? Math.min(w / vb.width, h / vb.height) : Math.max(w / vb.width, h / vb.height)
-    const offsetX = (w - vb.width * scale) / 2
-    const offsetY = (h - vb.height * scale) / 2
+    const scale = isPortrait ? Math.min(w / 1600, h / 900) : Math.max(w / 1600, h / 900)
+    const offsetX = (w - 1600 * scale) / 2
+    const offsetY = (h - 900 * scale) / 2
     const relX = clientX - rect.left
     const relY = clientY - rect.top
     return {
-      x: vb.minX + (relX - offsetX) / scale,
-      y: vb.minY + (relY - offsetY) / scale,
+      x: (relX - offsetX) / scale,
+      y: (relY - offsetY) / scale,
     }
   }, [])
 
@@ -368,11 +325,8 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       if (e?.stopPropagation) e.stopPropagation()
       const target = draggingRef.current
       const pt = getSvgPoint(clientX, clientY)
-      const vb = viewBoxRef.current || { minX: 0, minY: 0, width: 1600, height: 900 }
-      const minYLimit = Math.max(20, vb.minY + 20)
-      const maxYLimit = Math.min(560, vb.minY + vb.height * 0.62)
       const rawX = pt.x - dragOffsetRef.current.dx
-      const newY = Math.max(minYLimit, Math.min(maxYLimit, pt.y - dragOffsetRef.current.dy))
+      const newY = Math.max(20, Math.min(560, pt.y - dragOffsetRef.current.dy))
       const safeX = Number.isFinite(rawX) ? rawX : 380
       const safeY = Number.isFinite(newY) ? newY : 150
 
@@ -393,11 +347,9 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
         topTouchTargetRef.current.setAttribute('cy', safeY)
       }
 
-      // Transition when reaching actual valley scene edges according to active responsive viewBox
-      const leftBoundary = vb.minX + 80
-      const rightBoundary = vb.minX + vb.width - 80
-      const isOffRightScene = safeX >= rightBoundary
-      const isOffLeftScene = safeX <= leftBoundary
+      // Only transition when reaching actual valley scene edges (safeX >= 1520 or safeX <= 80)
+      const isOffRightScene = safeX >= 1520
+      const isOffLeftScene = safeX <= 80
 
       if (target === 'sun') {
         // Forward: Dragging Sun off right screen (Sunset -> Nightfall)
@@ -725,12 +677,12 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          MASTER BOTANICAL SVG CANVAS (RESPONSIVE VIEWBOX FOR ALL SCREENS)
+          MASTER BOTANICAL SVG CANVAS (1600x900 NATIVE DESIGN SPACE)
       ══════════════════════════════════════════════════════════════ */}
       <svg
         ref={svgRef}
-        viewBox={viewBox}
-        preserveAspectRatio="xMidYMid meet"
+        viewBox="0 0 1600 900"
+        preserveAspectRatio={isPortraitMobile ? 'xMidYMid meet' : 'xMidYMid slice'}
         style={{
           position: 'absolute',
           inset: 0,

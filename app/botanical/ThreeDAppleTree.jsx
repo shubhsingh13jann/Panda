@@ -734,7 +734,7 @@ function ThreeBotanicalTree({ timeT, sunPos, isNight, sunsetFactor, directSunFac
               left: 'max(-2vw, -20px)',
               bottom: 0,
               width: 'min(36vw, 540px)',
-              height: 'min(88dvh, 820px)',
+              height: 'min(88vh, 820px)',
               zIndex: 25,
               pointerEvents: 'none',
               overflow: 'visible',
