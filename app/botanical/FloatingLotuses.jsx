@@ -124,7 +124,7 @@ function RealisticBloomingLotus({
             stroke="#b45309"
             strokeWidth="1.2"
           />
-          {false && [-12, -8, -4, 0, 4, 8, 12].map((dotX, idx) => (
+          {[-12, -8, -4, 0, 4, 8, 12].map((dotX, idx) => (
             <circle key={`dot-${idx}`} cx={dotX} cy={1.5} r={1.5} fill="#fef08a" stroke="#d97706" strokeWidth="0.5" />
           ))}
         </g>
@@ -209,7 +209,7 @@ function FloatingLotuses({ bloom = 1.0, isNight, onInspect }) {
   return (
     <g id="floating-aquatic-lotuses">
         {/* ── 15. FLOATING LILY PADS (ORGANIC PELTATE LEAVES RESTING FLAT ON WATER) ── */}
-        {false && [
+        {[
           { cx: 640, cy: 660, rx: 36, ry: 10 },
           { cx: 700, cy: 685, rx: 42, ry: 12 },
           { cx: 900, cy: 655, rx: 38, ry: 11 },
