@@ -84,7 +84,7 @@ export default function RealisticCurtainStage({ onStart, onFinish }) {
     const GOLD = { r: 251, g: 191, b: 36 }
     const SAKURA_PINK = { r: 244, g: 114, b: 182 }
 
-    const OPEN_DURATION = 3800 // 3.8s smooth, stately unveiling
+    const OPEN_DURATION = 3800 // 3.8s smooth, stately unveiling (calibrated fabric retract rate)
     let progress = 0
     let crestTriggered = false
 
