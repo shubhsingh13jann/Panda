@@ -1,4 +1,3 @@
-// [Performance Optimized with React.memo & Stable Callbacks]
 'use client'
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
