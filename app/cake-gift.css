@@ -55,6 +55,12 @@
     radial-gradient(circle at 18% 22%, rgba(16, 185, 129, 0.2), transparent 35%),
     radial-gradient(circle at 82% 74%, rgba(251, 191, 36, 0.15), transparent 30%),
     radial-gradient(ellipse at top, #064e3b 0%, #022c22 45%, #011611 80%, #000c09 100%);
+  animation: cakeScreenFadeIn 0.85s ease-out both;
+}
+
+@keyframes cakeScreenFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .cake-stars {
