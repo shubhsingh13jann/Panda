@@ -50,6 +50,12 @@ body {
   line-height: 1.6;
 }
 
+.touch-none {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  user-select: none !important;
+}
+
 /* ========== KEYFRAMES ========== */
 
 @keyframes petalFall {
