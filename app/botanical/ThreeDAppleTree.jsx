@@ -694,10 +694,10 @@ function SceneTreeContent({ timeT, sunPos, isNight, sunsetFactor, directSunFacto
       */}
       <group ref={treeGroupRef} position={[0, -0.85, 0]} scale={[0.82, 0.82, 0.82]}>
         <TreeTrunkAndLimbs isNight={isNight} sunsetFactor={sunsetFactor} directSunFactor={directSunFactor} />
-        {/* <TreeFoliageCanopy isNight={isNight} sunsetFactor={sunsetFactor} directSunFactor={directSunFactor} />
+        <TreeFoliageCanopy isNight={isNight} sunsetFactor={sunsetFactor} directSunFactor={directSunFactor} />
         {/* <TreeApples isNight={isNight} onInspect={onInspect} />
         {/* <ThreeOwl isNight={isNight} isAwakened={isOwlAwakened} onInspect={onInspect} />
-        {/* <FloatingBreezeLeaves isNight={isNight} />
+        <FloatingBreezeLeaves isNight={isNight} />
       </group>
     </>
   )
