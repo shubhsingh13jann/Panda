@@ -1106,7 +1106,7 @@ function MeadowFlora({
       />
 
       {/* Sunflowers firmly rooted on meadows */}
-      <g id="sunflower-grove" style={{ display: "none" }}>
+      <g id="sunflower-grove">
         <RealisticSunflower x={1520} y={560} scale={0.66} sunPos={sunPos} isNight={isNight} onInspect={onInspect} />
         <RealisticSunflower x={1620} y={550} scale={0.70} sunPos={sunPos} isNight={isNight} onInspect={onInspect} />
         <RealisticSunflower x={1720} y={565} scale={0.68} sunPos={sunPos} isNight={isNight} onInspect={onInspect} />
