@@ -31,3 +31,4 @@
 [2026-12-16T17:45:00] feat(stage-2): link candle blow completion to balloon stage transition
 [2026-12-17T10:40:00] feat(stage-3): build responsive svg balloon bundle tethered to letter knot
 [2026-12-17T18:35:00] feat(stage-3): add realistic wind sway physics and bobbing motion values
+[2026-12-18T10:15:00] feat(stage-3): implement individual balloon popping with confetti burst
