@@ -81,6 +81,11 @@ function RealisticWaterGlade({
   simTick = 0,
 }) {
   const targetX = isNight ? (moonPos?.x ?? 380) : (sunPos?.x ?? 380)
+  const diffuseFill = isNight
+    ? 'url(#lakeMoonGlow)'
+    : sunsetFactor > 0.25
+    ? 'url(#lakeSunsetGlow)'
+    : 'url(#lakeAmbientGlow)'
   const columnFill = isNight
     ? 'url(#moonColumnWash)'
     : sunsetFactor > 0.25
@@ -95,23 +100,21 @@ function RealisticWaterGlade({
 
   return (
     <g id="realistic-water-glade" pointerEvents="none" opacity={baseOpacity}>
-      {/* 1. Wide Ambient Water Light Diffusion (No rigid straight edges!) */}
+      {/* 1. Wide Ambient Water Light Diffusion (Hardware accelerated radial gradient glow!) */}
       <ellipse
         cx={targetX}
         cy="590"
         rx="340"
         ry="135"
-        fill={columnFill}
-        opacity={isNight ? 0.45 : 0.65}
-        filter="blur(40px)"
+        fill={diffuseFill}
+        opacity={isNight ? 0.65 : 0.85}
       />
 
-      {/* 2. Wide Spreading Caustic Light Fan (Matching God Rays Spread) */}
+      {/* 2. Wide Spreading Caustic Light Fan (Soft gradient column wash) */}
       <polygon
         points={`${targetX - 45},476 ${targetX + 45},476 ${targetX + 320},720 ${targetX - 320},720`}
         fill={columnFill}
-        opacity={isNight ? 0.25 : 0.38}
-        filter="blur(42px)"
+        opacity={isNight ? 0.22 : 0.35}
       />
 
       {/* 3. Randomly Spreading Organic Wavelets Across the Wide Fan */}

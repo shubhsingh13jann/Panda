@@ -85,23 +85,35 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
     isPortraitMobileRef.current = isPortraitMobile
   }, [isPortraitMobile])
 
+  const lastStateUpdateTimeRef = useRef(0)
+  const lastStateUpdatePosRef = useRef({ x: 380, y: 145 })
+
   // Butter-smooth 60fps / 120fps requestAnimationFrame update batcher
   const scheduleCelestialUpdate = useCallback((type, x, y) => {
     nextCelestialPosRef.current = { type, x, y }
-    if (celestialRafRef.current == null) {
-      celestialRafRef.current = requestAnimationFrame(() => {
-        celestialRafRef.current = null
-        if (!nextCelestialPosRef.current) return
-        const { type: t, x: px, y: py } = nextCelestialPosRef.current
-        nextCelestialPosRef.current = null
-        if (t === 'sun') {
-          sunPosRef.current = { x: px, y: py }
-          setSunPos({ x: px, y: py })
-        } else {
-          moonPosRef.current = { x: px, y: py }
-          setMoonPos({ x: px, y: py })
-        }
-      })
+    const now = performance.now()
+    const distSq = (x - lastStateUpdatePosRef.current.x) ** 2 + (y - lastStateUpdatePosRef.current.y) ** 2
+
+    // Throttle React state re-renders to every 40ms during drag (or on larger distance jump)
+    // This allows the Sun/Moon DOM element to track at 120FPS via GPU transform without freezing the page!
+    if (now - lastStateUpdateTimeRef.current >= 40 || distSq > 360) {
+      lastStateUpdateTimeRef.current = now
+      lastStateUpdatePosRef.current = { x, y }
+      if (celestialRafRef.current == null) {
+        celestialRafRef.current = requestAnimationFrame(() => {
+          celestialRafRef.current = null
+          if (!nextCelestialPosRef.current) return
+          const { type: t, x: px, y: py } = nextCelestialPosRef.current
+          nextCelestialPosRef.current = null
+          if (t === 'sun') {
+            sunPosRef.current = { x: px, y: py }
+            setSunPos({ x: px, y: py })
+          } else {
+            moonPosRef.current = { x: px, y: py }
+            setMoonPos({ x: px, y: py })
+          }
+        })
+      }
     }
   }, [])
 
@@ -340,10 +352,12 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
 
       // Instant hardware-accelerated DOM transform for 0ms lag-free tracking!
       if (target === 'sun') {
+        sunPosRef.current = { x: safeX, y: safeY }
         if (sunElRef.current) {
           sunElRef.current.setAttribute('transform', `translate(${safeX}, ${safeY})`)
         }
       } else if (target === 'moon') {
+        moonPosRef.current = { x: safeX, y: safeY }
         if (moonElRef.current) {
           moonElRef.current.setAttribute('transform', `translate(${safeX}, ${safeY})`)
         }
@@ -432,9 +446,16 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       } catch (_) {}
     }
     if (draggingRef.current) {
+      const target = draggingRef.current
       draggingRef.current = null
       setIsDraggingSun(false)
       setIsDraggingMoon(false)
+      // Flush final position synchronously on release so React state is 100% in sync!
+      if (target === 'sun') {
+        setSunPos({ ...sunPosRef.current })
+      } else if (target === 'moon') {
+        setMoonPos({ ...moonPosRef.current })
+      }
     }
   }, [])
 
@@ -449,6 +470,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   }
 
   const handlePointerMove = (e) => {
+    if (!draggingRef.current) return
     const c = extractCoords(e)
     moveCelestialDrag(c.clientX, c.clientY, e)
   }
@@ -474,6 +496,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
     }
 
     const onPointerMove = (e) => {
+      if (!draggingRef.current) return
       const c = extractCoords(e)
       moveCelestialDrag(c.clientX, c.clientY, e)
     }

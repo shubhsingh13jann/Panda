@@ -1125,5 +1125,12 @@ function MeadowFlora({
   )
 }
 
-export default React.memo(MeadowFlora)
+export default React.memo(MeadowFlora, (prev, next) => {
+  return (
+    prev.isNight === next.isNight &&
+    Math.abs((prev.bloom || 0) - (next.bloom || 0)) < 0.05 &&
+    Math.abs((prev.sunsetFactor || 0) - (next.sunsetFactor || 0)) < 0.08 &&
+    Math.abs((prev.directSunFactor || 0) - (next.directSunFactor || 0)) < 0.08
+  )
+})
 export { RealisticLeftMeadowHill, RealisticRightMeadowHill, AlpineMeadowFlora, RealisticSunflower }

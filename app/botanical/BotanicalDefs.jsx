@@ -495,6 +495,26 @@ function BotanicalDefs({ isNight = false, sunsetFactor = 0 }) {
                   <stop offset="100%" stopColor="#9a3412" stopOpacity="0" />
                 </radialGradient>
 
+      {/* Hardware-accelerated soft lake light diffusion (Zero blur convolution cost!) */}
+      <radialGradient id="lakeAmbientGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#fef08a" stopOpacity="0.55" />
+        <stop offset="35%" stopColor="#fbbf24" stopOpacity="0.30" />
+        <stop offset="70%" stopColor="#f59e0b" stopOpacity="0.10" />
+        <stop offset="100%" stopColor="#d97706" stopOpacity="0.0" />
+      </radialGradient>
+      <radialGradient id="lakeSunsetGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#fed7aa" stopOpacity="0.65" />
+        <stop offset="35%" stopColor="#fb923c" stopOpacity="0.38" />
+        <stop offset="70%" stopColor="#ea580c" stopOpacity="0.14" />
+        <stop offset="100%" stopColor="#9a3412" stopOpacity="0.0" />
+      </radialGradient>
+      <radialGradient id="lakeMoonGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#ffffff" stopOpacity="0.45" />
+        <stop offset="35%" stopColor="#bae6fd" stopOpacity="0.25" />
+        <stop offset="70%" stopColor="#7dd3fc" stopOpacity="0.09" />
+        <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
+      </radialGradient>
+
       <linearGradient id="hillBackMeadowGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor={isNight ? "#0d2618" : sunsetFactor > 0.3 ? "#784b1b" : "#4e8c5c"} />
                   <stop offset="40%" stopColor={isNight ? "#0a1f13" : sunsetFactor > 0.3 ? "#543d1a" : "#3b7a4a"} />
@@ -610,5 +630,10 @@ function BotanicalDefs({ isNight = false, sunsetFactor = 0 }) {
   )
 }
 
-export default React.memo(BotanicalDefs)
+export default React.memo(BotanicalDefs, (prev, next) => {
+  return (
+    prev.isNight === next.isNight &&
+    Math.abs((prev.sunsetFactor || 0) - (next.sunsetFactor || 0)) < 0.08
+  )
+})
 export { BotanicalDefs }

@@ -275,5 +275,10 @@ function FloatingLotuses({ bloom = 1.0, isNight, onInspect }) {
   )
 }
 
-export default React.memo(FloatingLotuses)
+export default React.memo(FloatingLotuses, (prev, next) => {
+  return (
+    prev.isNight === next.isNight &&
+    Math.abs((prev.bloom || 0) - (next.bloom || 0)) < 0.05
+  )
+})
 export { RealisticBloomingLotus, FloatingWaterLily, BotanicalLotusPetal }

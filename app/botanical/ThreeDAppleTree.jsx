@@ -743,6 +743,7 @@ function ThreeBotanicalTree({ timeT, sunPos, isNight, sunsetFactor, directSunFac
     >
       <Canvas
         camera={{ position: [0.12, 0.25, 10.2], fov: 44 }}
+        dpr={[1, 1.5]}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
         style={{ width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
       >
