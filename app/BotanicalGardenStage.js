@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { ECOLOGY_DATABASE } from './botanical/ecologyData'
 import PandaOrientationBillboard from './botanical/PandaOrientationBillboard'
 import BotanicalDefs from './botanical/BotanicalDefs'
@@ -29,13 +29,81 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   const [activeSpecimen, setActiveSpecimen] = useState(null)
   const [bloomingGift, setBloomingGift] = useState(false)
   const [waterRipples, setWaterRipples] = useState([])
+  const [showInfoBanner, setShowInfoBanner] = useState(true)
+  const infoTimeoutRef = useRef(null)
+
+  const sunPosRef = useRef({ x: 380, y: 145 })
+  const moonPosRef = useRef({ x: 380, y: 155 })
+  const isNightModeRef = useRef(false)
+  const isPortraitMobileRef = useRef(false)
 
   const svgRef = useRef(null)
+  const sunElRef = useRef(null)
+  const moonElRef = useRef(null)
+  const topTouchTargetRef = useRef(null)
+
   const draggingRef = useRef(null) // null | 'sun' | 'moon'
   const dragOffsetRef = useRef({ dx: 0, dy: 0 })
+  const nextCelestialPosRef = useRef(null)
+  const celestialRafRef = useRef(null)
+
+  // Auto-dismiss top guide message after 4.5 seconds on page open
+  useEffect(() => {
+    infoTimeoutRef.current = setTimeout(() => {
+      setShowInfoBanner(false)
+    }, 4500)
+    return () => {
+      if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current)
+    }
+  }, [])
+
+  const handleInfoButtonClick = useCallback(() => {
+    if (infoTimeoutRef.current) clearTimeout(infoTimeoutRef.current)
+    setShowInfoBanner(true)
+    infoTimeoutRef.current = setTimeout(() => {
+      setShowInfoBanner(false)
+    }, 4500)
+  }, [])
 
   // Secondary continuous tick for water ripples, animal breathing, drinking motion
   const [simTick, setSimTick] = useState(0)
+
+  // Sync refs with latest state
+  useEffect(() => {
+    sunPosRef.current = sunPos
+  }, [sunPos])
+
+  useEffect(() => {
+    moonPosRef.current = moonPos
+  }, [moonPos])
+
+  useEffect(() => {
+    isNightModeRef.current = isNightMode
+  }, [isNightMode])
+
+  useEffect(() => {
+    isPortraitMobileRef.current = isPortraitMobile
+  }, [isPortraitMobile])
+
+  // Butter-smooth 60fps / 120fps requestAnimationFrame update batcher
+  const scheduleCelestialUpdate = useCallback((type, x, y) => {
+    nextCelestialPosRef.current = { type, x, y }
+    if (celestialRafRef.current == null) {
+      celestialRafRef.current = requestAnimationFrame(() => {
+        celestialRafRef.current = null
+        if (!nextCelestialPosRef.current) return
+        const { type: t, x: px, y: py } = nextCelestialPosRef.current
+        nextCelestialPosRef.current = null
+        if (t === 'sun') {
+          sunPosRef.current = { x: px, y: py }
+          setSunPos({ x: px, y: py })
+        } else {
+          moonPosRef.current = { x: px, y: py }
+          setMoonPos({ x: px, y: py })
+        }
+      })
+    }
+  }, [])
 
   useEffect(() => {
     const evaluateOrientation = () => {
@@ -57,12 +125,21 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   useEffect(() => {
     let animId
     let lastStamp = performance.now()
+    let accum = 0
 
     const step = (now) => {
       const delta = (now - lastStamp) / 1000
       lastStamp = now
 
-      setSimTick((prev) => prev + delta)
+      // Pause ambient re-renders during active celestial drag for locked 60/120 FPS
+      if (!draggingRef.current) {
+        accum += delta
+        // Throttle ambient wildlife animations to ~25 FPS (0.04s) to eliminate background re-render churn
+        if (accum >= 0.04) {
+          setSimTick((prev) => prev + accum)
+          accum = 0
+        }
+      }
       animId = requestAnimationFrame(step)
     }
 
@@ -139,6 +216,8 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
     }
   }, [isNight, sunPos.x, directSunFactor])
 
+  const bloom = bloomFactor
+
   // Sunflower heliotropic solar tracking: 2D angle pointing directly at the active sun/moon
   const getSunflowerAngle = useCallback((flowX, flowY) => {
     const targetX = isNight ? moonPos.x : sunPos.x
@@ -166,7 +245,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   }, [])
 
   // ── PRECISE COORDINATE MAPPING FROM VIEWPORT PIXELS TO 1600x900 SVG SPACE ──
-  // Bulletproof on mobile landscape (CTM-aware with exact mathematical xMidYMid slice fallback)
+  // Bulletproof on mobile portrait & landscape (CTM-aware with exact mathematical slice/meet fallback)
   const getSvgPoint = useCallback((clientX, clientY) => {
     if (!svgRef.current || typeof clientX !== 'number' || typeof clientY !== 'number') {
       return { x: 380, y: 150 }
@@ -184,11 +263,12 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       }
     } catch (_) {}
 
-    // Robust mathematical fallback for preserveAspectRatio="xMidYMid slice"
+    // Robust mathematical fallback for preserveAspectRatio
     const rect = svgRef.current.getBoundingClientRect()
     const w = rect.width || (typeof window !== 'undefined' ? window.innerWidth : 1600)
     const h = rect.height || (typeof window !== 'undefined' ? window.innerHeight : 900)
-    const scale = Math.max(w / 1600, h / 900)
+    const isPortrait = isPortraitMobileRef.current
+    const scale = isPortrait ? Math.min(w / 1600, h / 900) : Math.max(w / 1600, h / 900)
     const offsetX = (w - 1600 * scale) / 2
     const offsetY = (h - 900 * scale) / 2
     const relX = clientX - rect.left
@@ -218,8 +298,8 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
         return false
       }
       const pt = getSvgPoint(clientX, clientY)
-      const targetPos = isNightMode ? moonPos : sunPos
-      const targetType = isNightMode ? 'moon' : 'sun'
+      const targetPos = isNightModeRef.current ? moonPosRef.current : sunPosRef.current
+      const targetType = isNightModeRef.current ? 'moon' : 'sun'
       const dist = Math.hypot(pt.x - targetPos.x, pt.y - targetPos.y)
 
       // Generous 180px hit radius ensures instant, effortless grab on phone screens & desktop alike
@@ -233,11 +313,17 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
         draggingRef.current = targetType
         if (targetType === 'sun') setIsDraggingSun(true)
         else setIsDraggingMoon(true)
+
+        if (e?.pointerId != null && e?.target?.setPointerCapture) {
+          try {
+            e.target.setPointerCapture(e.pointerId)
+          } catch (_) {}
+        }
         return true
       }
       return false
     },
-    [getSvgPoint, isNightMode, moonPos, sunPos]
+    [getSvgPoint]
   )
 
   const moveCelestialDrag = useCallback(
@@ -252,58 +338,99 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       const safeX = Number.isFinite(rawX) ? rawX : 380
       const safeY = Number.isFinite(newY) ? newY : 150
 
-      const screenW = typeof window !== 'undefined' ? window.innerWidth : 1600
-      const isOffRightEdge = clientX >= screenW - 20 || safeX >= 1520
-      const isOffLeftEdge = clientX <= 20 || safeX <= 80
+      // Instant hardware-accelerated DOM transform for 0ms lag-free tracking!
+      if (target === 'sun') {
+        if (sunElRef.current) {
+          sunElRef.current.setAttribute('transform', `translate(${safeX}, ${safeY})`)
+        }
+      } else if (target === 'moon') {
+        if (moonElRef.current) {
+          moonElRef.current.setAttribute('transform', `translate(${safeX}, ${safeY})`)
+        }
+      }
+      if (topTouchTargetRef.current) {
+        topTouchTargetRef.current.setAttribute('cx', safeX)
+        topTouchTargetRef.current.setAttribute('cy', safeY)
+      }
+
+      // Only transition when reaching actual valley scene edges (safeX >= 1520 or safeX <= 80)
+      // Removing clientX bezel triggers completely prevents accidental drag drops on mobile!
+      const isOffRightScene = safeX >= 1520
+      const isOffLeftScene = safeX <= 80
 
       if (target === 'sun') {
         // Forward: Dragging Sun off right screen (Sunset -> Nightfall)
-        if (isOffRightEdge) {
+        if (isOffRightScene) {
           setIsNightMode(true)
-          setMoonPos({ x: 180, y: 160 })
-          setSunPos({ x: 180, y: 200 })
+          isNightModeRef.current = true
+          const newMoon = { x: 180, y: 160 }
+          const newSun = { x: 180, y: 200 }
+          moonPosRef.current = newMoon
+          sunPosRef.current = newSun
+          setMoonPos(newMoon)
+          setSunPos(newSun)
           draggingRef.current = null
           setIsDraggingSun(false)
         }
         // Backward / Opposite Direction: Dragging Sun off left screen (Rewind past dawn -> Previous Night)
-        else if (isOffLeftEdge) {
+        else if (isOffLeftScene) {
           setIsNightMode(true)
-          setMoonPos({ x: 1380, y: 160 })
-          setSunPos({ x: 1380, y: 200 })
+          isNightModeRef.current = true
+          const newMoon = { x: 1380, y: 160 }
+          const newSun = { x: 1380, y: 200 }
+          moonPosRef.current = newMoon
+          sunPosRef.current = newSun
+          setMoonPos(newMoon)
+          setSunPos(newSun)
           draggingRef.current = null
           setIsDraggingSun(false)
         }
         // Normal dragging in sky (Left-to-Right or Right-to-Left, fully bidirectional & smooth)
         else {
-          setSunPos({ x: safeX, y: safeY })
+          scheduleCelestialUpdate('sun', safeX, safeY)
         }
       } else if (target === 'moon') {
         // Forward: Dragging Moon off right screen (End of Night -> Sunrise / Dawn)
-        if (isOffRightEdge) {
+        if (isOffRightScene) {
           setIsNightMode(false)
-          setSunPos({ x: 180, y: 220 })
-          setMoonPos({ x: 180, y: 160 })
+          isNightModeRef.current = false
+          const newSun = { x: 180, y: 220 }
+          const newMoon = { x: 180, y: 160 }
+          sunPosRef.current = newSun
+          moonPosRef.current = newMoon
+          setSunPos(newSun)
+          setMoonPos(newMoon)
           draggingRef.current = null
           setIsDraggingMoon(false)
         }
         // Backward / Opposite Direction: Dragging Moon off left screen (Rewind night -> Golden Sunset!)
-        else if (isOffLeftEdge) {
+        else if (isOffLeftScene) {
           setIsNightMode(false)
-          setSunPos({ x: 1380, y: 200 })
-          setMoonPos({ x: 1380, y: 160 })
+          isNightModeRef.current = false
+          const newSun = { x: 1380, y: 200 }
+          const newMoon = { x: 1380, y: 160 }
+          sunPosRef.current = newSun
+          moonPosRef.current = newMoon
+          setSunPos(newSun)
+          setMoonPos(newMoon)
           draggingRef.current = null
           setIsDraggingMoon(false)
         }
         // Normal dragging in sky (Left-to-Right or Right-to-Left, fully bidirectional & smooth)
         else {
-          setMoonPos({ x: safeX, y: safeY })
+          scheduleCelestialUpdate('moon', safeX, safeY)
         }
       }
     },
-    [getSvgPoint]
+    [getSvgPoint, scheduleCelestialUpdate]
   )
 
-  const endCelestialDrag = useCallback(() => {
+  const endCelestialDrag = useCallback((e) => {
+    if (e?.pointerId != null && e?.target?.releasePointerCapture) {
+      try {
+        e.target.releasePointerCapture(e.pointerId)
+      } catch (_) {}
+    }
     if (draggingRef.current) {
       draggingRef.current = null
       setIsDraggingSun(false)
@@ -351,45 +478,32 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       moveCelestialDrag(c.clientX, c.clientY, e)
     }
 
-    const onPointerUp = () => {
-      endCelestialDrag()
+    const onPointerUp = (e) => {
+      endCelestialDrag(e)
     }
 
-    // Touch events for mobile browsers (passive: false explicitly prevents browser scroll hijacking)
-    const onTouchStart = (e) => {
-      const c = extractCoords(e)
-      startCelestialDrag(c.clientX, c.clientY, e)
-    }
+    window.addEventListener('pointerdown', onPointerDown, { passive: false })
+    window.addEventListener('pointermove', onPointerMove, { passive: false })
+    window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
 
+    // Touchmove preventDefault only when actively dragging to eliminate scroll interference
     const onTouchMove = (e) => {
-      const c = extractCoords(e)
-      moveCelestialDrag(c.clientX, c.clientY, e)
+      if (draggingRef.current && e.cancelable) {
+        e.preventDefault()
+      }
     }
-
-    const onTouchEnd = () => {
-      endCelestialDrag()
-    }
-
-    window.addEventListener('pointerdown', onPointerDown, { capture: true, passive: false })
-    window.addEventListener('pointermove', onPointerMove, { capture: true, passive: false })
-    window.addEventListener('pointerup', onPointerUp, { capture: true })
-    window.addEventListener('pointercancel', onPointerUp, { capture: true })
-
-    window.addEventListener('touchstart', onTouchStart, { capture: true, passive: false })
-    window.addEventListener('touchmove', onTouchMove, { capture: true, passive: false })
-    window.addEventListener('touchend', onTouchEnd, { capture: true })
-    window.addEventListener('touchcancel', onTouchEnd, { capture: true })
+    window.addEventListener('touchmove', onTouchMove, { passive: false })
 
     return () => {
-      window.removeEventListener('pointerdown', onPointerDown, { capture: true })
-      window.removeEventListener('pointermove', onPointerMove, { capture: true })
-      window.removeEventListener('pointerup', onPointerUp, { capture: true })
-      window.removeEventListener('pointercancel', onPointerUp, { capture: true })
-
-      window.removeEventListener('touchstart', onTouchStart, { capture: true })
-      window.removeEventListener('touchmove', onTouchMove, { capture: true })
-      window.removeEventListener('touchend', onTouchEnd, { capture: true })
-      window.removeEventListener('touchcancel', onTouchEnd, { capture: true })
+      window.removeEventListener('pointerdown', onPointerDown)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointercancel', onPointerUp)
+      window.removeEventListener('touchmove', onTouchMove)
+      if (celestialRafRef.current) {
+        cancelAnimationFrame(celestialRafRef.current)
+      }
     }
   }, [startCelestialDrag, moveCelestialDrag, endCelestialDrag])
 
@@ -422,65 +536,148 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
     >
       {/* ══════════════════════════════════════════════════════════════
           TOP SLEEK COMPACT INSTRUCTION PILL (Matching Image 2 & 3)
+          Visible for few seconds on page open & re-triggered by top-right 'i' button
       ══════════════════════════════════════════════════════════════ */}
-      <div
+      <AnimatePresence>
+        {showInfoBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -16, scale: 0.95 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            style={{
+              position: 'absolute',
+              top: 'clamp(6px, 1.4vh, 14px)',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 40,
+              pointerEvents: 'none',
+              textAlign: 'center',
+              width: 'min(92vw, 560px)',
+            }}
+          >
+            <div
+              style={{
+                background: 'rgba(15, 23, 42, 0.82)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                borderRadius: '9999px',
+                padding: 'clamp(4px, 0.9vh, 7px) clamp(14px, 2vw, 20px)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '2px',
+              }}
+            >
+              <div
+                style={{
+                  color: '#ffffff',
+                  fontSize: 'clamp(0.82rem, 1.8vw, 0.94rem)',
+                  fontWeight: 600,
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  letterSpacing: '0.2px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span>{isNight ? '🌙' : '☼'}</span>
+                <span>
+                  {isNight
+                    ? 'Drag the moon across the sky — guide the night or move left to bring sunset'
+                    : 'Drag the sun across the sky — the valley wakes and sleeps with it'}
+                </span>
+              </div>
+              <div
+                style={{
+                  color: '#94a3b8',
+                  fontSize: 'clamp(0.64rem, 1.3vw, 0.72rem)',
+                  fontWeight: 700,
+                  letterSpacing: '1.4px',
+                  textTransform: 'uppercase',
+                }}
+              >
+                TAP THE DEER, BEES, LOTUS & FLOWERS FOR BOTANICAL FIELD NOTES
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ══════════════════════════════════════════════════════════════
+          TOP RIGHT 'i' INFO TOGGLE BUTTON
+      ══════════════════════════════════════════════════════════════ */}
+      <motion.button
+        onClick={handleInfoButtonClick}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.92 }}
+        title="Botanical Valley Guide & Instructions"
+        aria-label="Toggle valley guide"
         style={{
           position: 'absolute',
-          top: 'clamp(6px, 1.4vh, 14px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 40,
-          pointerEvents: 'none',
-          textAlign: 'center',
-          width: 'min(94vw, 560px)',
+          top: 'clamp(8px, 1.6vh, 16px)',
+          right: 'clamp(12px, 2vw, 20px)',
+          zIndex: 60,
+          width: 'clamp(34px, 4.2vw, 40px)',
+          height: 'clamp(34px, 4.2vw, 40px)',
+          borderRadius: '50%',
+          background: showInfoBanner
+            ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%)'
+            : 'rgba(15, 23, 42, 0.80)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1.5px solid rgba(254, 240, 138, 0.7)',
+          boxShadow: showInfoBanner
+            ? '0 0 16px rgba(245, 158, 11, 0.55), 0 4px 14px rgba(0,0,0,0.45)'
+            : '0 4px 14px rgba(0, 0, 0, 0.45)',
+          color: '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          fontFamily: 'Georgia, Cambria, serif',
+          fontSize: 'clamp(1rem, 2vw, 1.15rem)',
+          fontWeight: 800,
+          fontStyle: 'italic',
+          padding: 0,
+          outline: 'none',
+          transition: 'background 0.25s ease, box-shadow 0.25s ease',
         }}
       >
+        i
+      </motion.button>
+
+      {/* ── Subtle orientation hint pill for mobile portrait users ── */}
+      {isPortraitMobile && (
         <div
           style={{
-            background: 'rgba(15, 23, 42, 0.78)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(255, 255, 255, 0.16)',
+            position: 'absolute',
+            top: 'clamp(54px, 10vh, 70px)',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 42,
+            background: 'rgba(15, 23, 42, 0.85)',
+            border: '1px solid rgba(251, 191, 36, 0.45)',
             borderRadius: '9999px',
-            padding: 'clamp(4px, 0.9vh, 7px) clamp(14px, 2vw, 20px)',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
+            padding: '4px 14px',
+            color: '#fef3c7',
+            fontSize: '0.74rem',
+            fontWeight: 600,
             display: 'flex',
-            flexDirection: 'column',
             alignItems: 'center',
-            gap: '2px',
+            gap: '6px',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
           }}
         >
-          <div
-            style={{
-              color: '#ffffff',
-              fontSize: 'clamp(0.82rem, 1.8vw, 0.94rem)',
-              fontWeight: 600,
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-              letterSpacing: '0.2px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-            }}
-          >
-            <span>{isNight ? '🌙' : '☼'}</span>
-            <span>
-              {isNight
-                ? 'Drag the moon across the sky — guide the night or move left to bring sunset'
-                : 'Drag the sun across the sky — the valley wakes and sleeps with it'}
-            </span>
-          </div>
-          <div
-            style={{
-              color: '#94a3b8',
-              fontSize: 'clamp(0.64rem, 1.3vw, 0.72rem)',
-              fontWeight: 700,
-              letterSpacing: '1.4px',
-              textTransform: 'uppercase',
-            }}
-          >
-            TAP THE DEER, BEES, LOTUS & FLOWERS FOR BOTANICAL FIELD NOTES
-          </div>
+          <span>📱</span>
+          <span>Rotate phone sideways for panoramic valley view</span>
+          <span>🔄</span>
         </div>
-      </div>
+      )}
 
       {/* ══════════════════════════════════════════════════════════════
           MASTER BOTANICAL SVG CANVAS (1600x900 NATIVE DESIGN SPACE)
@@ -488,7 +685,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       <svg
         ref={svgRef}
         viewBox="0 0 1600 900"
-        preserveAspectRatio="xMidYMid slice"
+        preserveAspectRatio={isPortraitMobile ? 'xMidYMid meet' : 'xMidYMid slice'}
         style={{
           position: 'absolute',
           inset: 0,
@@ -520,6 +717,8 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
           simTick={simTick}
           handleSunPointerDown={handleSunPointerDown}
           handleMoonPointerDown={handleMoonPointerDown}
+          sunElRef={sunElRef}
+          moonElRef={moonElRef}
         />
 
         {/* ── 5, 6, 7 & 8: Realistic Alpine Mountain Range & Coniferous Forest ── */}
@@ -539,7 +738,9 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
           isNight={isNight}
           sunsetFactor={sunsetFactor}
           directSunFactor={directSunFactor}
+          nightFactor={nightFactor}
           sunPos={sunPos}
+          moonPos={moonPos}
           simTick={simTick}
           onInspect={handleInspect}
           waterRipples={waterRipples}
@@ -551,7 +752,6 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
           isNight={isNight}
           sunsetFactor={sunsetFactor}
           directSunFactor={directSunFactor}
-          sunPos={sunPos}
           bloom={bloom}
           onInspect={handleInspect}
         />
@@ -576,10 +776,13 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
           isNight={isNight}
           sunsetFactor={sunsetFactor}
           nightFactor={nightFactor}
+          bloomFactor={bloomFactor}
+          onInspect={handleInspect}
         />
 
         {/* ── 20. Top-Level Interactive Celestial Touch Target ── */}
         <circle
+          ref={topTouchTargetRef}
           cx={isNight ? moonPos.x : sunPos.x}
           cy={isNight ? moonPos.y : sunPos.y}
           r="180"
@@ -601,6 +804,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
         directSunFactor={directSunFactor}
         isOwlAwakened={Date.now() < owlAwakeUntil}
         onInspect={handleInspect}
+        isPortraitMobile={isPortraitMobile}
       />
 
       {/* ══════════════════════════════════════════════════════════════

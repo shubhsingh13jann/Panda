@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useRef, useMemo, Suspense } from 'react'
+import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
+import { motion } from 'framer-motion'
 import * as THREE from 'three'
 
-function TreeTrunkAndLimbs({ isNight, sunsetFactor, directSunFactor = 1.0 }) {
+const TreeTrunkAndLimbs = React.memo(function TreeTrunkAndLimbs({ isNight, sunsetFactor, directSunFactor = 1.0 }) {
   const trunkCurve = useMemo(
     () =>
       new THREE.CatmullRomCurve3([
@@ -137,9 +138,9 @@ function TreeTrunkAndLimbs({ isNight, sunsetFactor, directSunFactor = 1.0 }) {
       </mesh>
     </group>
   )
-}
+})
 
-function TreeFoliageCanopy({ isNight, sunsetFactor, directSunFactor = 1.0 }) {
+const TreeFoliageCanopy = React.memo(function TreeFoliageCanopy({ isNight, sunsetFactor, directSunFactor = 1.0 }) {
   const leafGroupRef = useRef()
 
   const FOLIAGE_DATA = useMemo(
@@ -201,7 +202,7 @@ function TreeFoliageCanopy({ isNight, sunsetFactor, directSunFactor = 1.0 }) {
       })}
     </group>
   )
-}
+})
 
 /* ══════════════════════════════════════════════════════════════════
    🍎 3D REALISTIC SCULPTED WILD MOUNTAIN APPLES (MALUS PUMILA)
@@ -211,7 +212,7 @@ function TreeFoliageCanopy({ isNight, sunsetFactor, directSunFactor = 1.0 }) {
    - Gentle harmonic pendulum breeze flutter in useFrame
    - Fully interactive tap target with Botanical Inspection
 ══════════════════════════════════════════════════════════════════ */
-function SingleApple({ position, scale = 0.16, phase = 0, isNight, onInspect }) {
+const SingleApple = React.memo(function SingleApple({ position, scale = 0.16, phase = 0, isNight, onInspect }) {
   const groupRef = useRef()
 
   useFrame(({ clock }) => {
@@ -284,9 +285,9 @@ function SingleApple({ position, scale = 0.16, phase = 0, isNight, onInspect }) 
       </mesh>
     </group>
   )
-}
+})
 
-function TreeApples({ isNight, onInspect }) {
+const TreeApples = React.memo(function TreeApples({ isNight, onInspect }) {
   const apples = [
     // 1. Far lower left branch
     { pos: [-1.65, 0.35, 0.85], scale: 0.15, phase: 0.2 },
@@ -324,9 +325,9 @@ function TreeApples({ isNight, onInspect }) {
       ))}
     </group>
   )
-}
+})
 
-function ThreeOwl({ isNight, isAwakened = false, onInspect }) {
+const ThreeOwl = React.memo(function ThreeOwl({ isNight, isAwakened = false, onInspect }) {
   const headRef = useRef()
   const bodyRef = useRef()
   const [localAwake, setLocalAwake] = useState(false)
@@ -599,9 +600,9 @@ function ThreeOwl({ isNight, isAwakened = false, onInspect }) {
       </group>
     </group>
   )
-}
+})
 
-function FloatingBreezeLeaves({ isNight }) {
+const FloatingBreezeLeaves = React.memo(function FloatingBreezeLeaves({ isNight }) {
   const count = 16
   const leavesRef = useRef([])
 
@@ -646,7 +647,7 @@ function FloatingBreezeLeaves({ isNight }) {
       ))}
     </group>
   )
-}
+})
 
 function SceneTreeContent({ timeT, sunPos, isNight, sunsetFactor, directSunFactor = 1.0, isOwlAwakened = false, onInspect }) {
   const treeGroupRef = useRef()
@@ -703,7 +704,7 @@ function SceneTreeContent({ timeT, sunPos, isNight, sunsetFactor, directSunFacto
   )
 }
 
-function ThreeBotanicalTree({ timeT, sunPos, isNight, sunsetFactor, directSunFactor = 1.0, isOwlAwakened = false, onInspect }) {
+function ThreeBotanicalTree({ timeT, sunPos, isNight, sunsetFactor, directSunFactor = 1.0, isOwlAwakened = false, onInspect, isPortraitMobile = false }) {
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)
@@ -716,16 +717,29 @@ function ThreeBotanicalTree({ timeT, sunPos, isNight, sunsetFactor, directSunFac
       initial={{ opacity: 0, scale: 0.96 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 1.0, ease: 'easeOut' }}
-      style={{
-        position: 'absolute',
-        left: 'max(-2vw, -20px)',
-        bottom: 0,
-        width: 'min(36vw, 540px)',
-        height: 'min(88vh, 820px)',
-        zIndex: 25,
-        pointerEvents: 'none',
-        overflow: 'visible',
-      }}
+      style={
+        isPortraitMobile
+          ? {
+              position: 'absolute',
+              left: 0,
+              top: 'calc(50% - 28.125vw)',
+              width: '38vw',
+              height: '56.25vw',
+              zIndex: 25,
+              pointerEvents: 'none',
+              overflow: 'visible',
+            }
+          : {
+              position: 'absolute',
+              left: 'max(-2vw, -20px)',
+              bottom: 0,
+              width: 'min(36vw, 540px)',
+              height: 'min(88vh, 820px)',
+              zIndex: 25,
+              pointerEvents: 'none',
+              overflow: 'visible',
+            }
+      }
     >
       <Canvas
         camera={{ position: [0.12, 0.25, 10.2], fov: 44 }}

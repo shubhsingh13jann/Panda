@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useMemo } from 'react'
+import { motion } from 'framer-motion'
 
 function RealisticCumulusCloud({
   variant = 'tower', // 'tower' | 'wide' | 'wisp'
@@ -213,20 +214,17 @@ function FlyingBirds({ simTick, isNight }) {
 ══════════════════════════════════════════════════════════════════ */
 
 
-function AmbientFauna({ simTick, isNight, sunsetFactor, nightFactor }) {
+function AmbientFauna({
+  simTick = 0,
+  isNight = false,
+  sunsetFactor = 0,
+  nightFactor = 0,
+  bloomFactor = 1.0,
+  onInspect,
+}) {
+  const handleInspect = onInspect || (() => {})
   return (
     <g id="ambient-fauna-and-atmosphere">
-      {/* Realistic Volumetric Drifting Clouds */}
-      <DriftingClouds
-        simTick={simTick}
-        sunsetFactor={sunsetFactor}
-        isNight={isNight}
-        nightFactor={nightFactor}
-      />
-
-      {/* Flocks of Flying Valley Birds */}
-      <FlyingBirds simTick={simTick} isNight={isNight} />
-
       {/* Honeybees, Butterflies by Day & Fireflies by Night */}
         {/* ── 17. FAUNA: HONEYBEES & BUTTERFLIES IN DAY, FIREFLIES IN NIGHT ── */}
         {!isNight ? (

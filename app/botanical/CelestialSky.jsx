@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import { motion } from 'framer-motion'
+import { DriftingClouds, FlyingBirds } from './AmbientFauna'
 
 function CelestialSky({
   isNight,
@@ -14,6 +16,8 @@ function CelestialSky({
   simTick = 0,
   handleSunPointerDown,
   handleMoonPointerDown,
+  sunElRef,
+  moonElRef,
 }) {
   return (
     <g id="celestial-sky-layer">
@@ -98,6 +102,7 @@ function CelestialSky({
         {/* ── 4. CELESTIAL SUN & MOON (PERSISTENT & 100% DRAGGABLE BI-DIRECTIONALLY) ── */}
         <g
           id="celestial-sun"
+          ref={sunElRef}
           transform={`translate(${sunPos.x}, ${sunPos.y})`}
           style={{
             cursor: isDraggingSun ? 'grabbing' : 'grab',
@@ -110,8 +115,8 @@ function CelestialSky({
           <circle cx="0" cy="0" r="150" fill="#ffffff" opacity="0.001" pointerEvents="all" />
 
           {/* Multi-tier soft glowing warm golden corona - dims realistically behind mountains */}
-          <circle cx="0" cy="0" r="95" fill="url(#sunOuterCorona)" opacity={0.12 + 0.33 * directSunFactor} filter="blur(16px)" />
-          <circle cx="0" cy="0" r="68" fill="url(#sunMidCorona)" opacity={0.20 + 0.45 * directSunFactor} filter="blur(8px)" />
+          <circle cx="0" cy="0" r="95" fill="url(#sunOuterCorona)" opacity={0.16 + 0.36 * directSunFactor} />
+          <circle cx="0" cy="0" r="68" fill="url(#sunMidCorona)" opacity={0.25 + 0.48 * directSunFactor} />
 
           {/* 12 Radiant Golden Triangular Sunray Petals */}
           {Array.from({ length: 12 }).map((_, i) => (
@@ -120,7 +125,6 @@ function CelestialSky({
               d="M -7 -44 L 0 -72 L 7 -44 Z"
               transform={`rotate(${(i / 12) * 360 + simTick * 3})`}
               fill="url(#sunRayGrad)"
-              filter="drop-shadow(0 0 4px rgba(245, 158, 11, 0.5))"
             />
           ))}
 
@@ -135,8 +139,8 @@ function CelestialSky({
           <circle cx="12" cy="-5" r="1.2" fill="#ffffff" />
 
           {/* Rosy Blushing Cheeks */}
-          <ellipse cx="-19" cy="4" rx="5.5" ry="4" fill="#f472b6" opacity="0.65" filter="blur(1px)" />
-          <ellipse cx="19" cy="4" rx="5.5" ry="4" fill="#f472b6" opacity="0.65" filter="blur(1px)" />
+          <ellipse cx="-19" cy="4" rx="5.5" ry="4" fill="#f472b6" opacity="0.65" />
+          <ellipse cx="19" cy="4" rx="5.5" ry="4" fill="#f472b6" opacity="0.65" />
 
           {/* Cheerful Curved Smile */}
           <path
@@ -150,6 +154,7 @@ function CelestialSky({
 
         <g
           id="celestial-moon"
+          ref={moonElRef}
           transform={`translate(${moonPos.x}, ${moonPos.y})`}
           style={{
             cursor: isDraggingMoon ? 'grabbing' : 'grab',
@@ -162,7 +167,7 @@ function CelestialSky({
           <circle cx="0" cy="0" r="115" fill="#ffffff" opacity="0.001" pointerEvents="all" />
 
           {/* Soft Luminous Lunar Corona */}
-          <circle cx="0" cy="0" r="75" fill="url(#moonGlowGrad)" opacity="0.65" filter="blur(12px)" />
+          <circle cx="0" cy="0" r="75" fill="url(#moonGlowGrad)" opacity={0.65} />
           <circle cx="0" cy="0" r="44" fill="#ffffff" opacity="0.95" />
           <circle cx="0" cy="0" r="42" fill="#f8fafc" />
 

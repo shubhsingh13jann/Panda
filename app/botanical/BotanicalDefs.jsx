@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-export default function BotanicalDefs({ isNight = false, sunsetFactor = 0 }) {
+function BotanicalDefs({ isNight = false, sunsetFactor = 0 }) {
   return (
     <defs>
       {/* Realistic Volumetric Cloud Gradients & Soft Filters */}
@@ -147,11 +147,11 @@ export default function BotanicalDefs({ isNight = false, sunsetFactor = 0 }) {
         <stop offset="100%" stopColor="#072445" />
       </linearGradient>
 
-      <linearGradient id="hillForeMeadowGrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stopColor="#22c55e" />
-        <stop offset="45%" stopColor="#16a34a" />
-        <stop offset="80%" stopColor="#15803d" />
-        <stop offset="100%" stopColor="#166534" />
+            <linearGradient id="hillForeMeadowGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor={isNight ? "#123824" : sunsetFactor > 0.3 ? "#9a5b1f" : "#5aa66b"} />
+        <stop offset="30%" stopColor={isNight ? "#0e2d1d" : sunsetFactor > 0.3 ? "#6d4a1c" : "#428d54"} />
+        <stop offset="70%" stopColor={isNight ? "#092014" : sunsetFactor > 0.3 ? "#364623" : "#2e6d40"} />
+        <stop offset="100%" stopColor={isNight ? "#05150c" : sunsetFactor > 0.3 ? "#1f2a17" : "#1f4e2c"} />
       </linearGradient>
 
       <linearGradient id="hillLeftMeadowGrad" x1="0" y1="0" x2="0" y2="1">
@@ -387,6 +387,228 @@ export default function BotanicalDefs({ isNight = false, sunsetFactor = 0 }) {
         <stop offset="50%" stopColor={isNight ? "#0284c7" : sunsetFactor > 0.3 ? "#9a3412" : "#854d0e"} stopOpacity="0.18" />
         <stop offset="100%" stopColor={isNight ? "#0f172a" : sunsetFactor > 0.3 ? "#431407" : "#365314"} stopOpacity="0" />
       </linearGradient>
+    
+      {/* ── RECOVERED LAND, CELESTIAL, MOUNTAIN & FLORA GRADIENTS ── */}
+      <radialGradient id="moonGlowGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                  <stop offset="40%" stopColor="#e2e8f0" stopOpacity="0.75" />
+                  <stop offset="70%" stopColor="#cbd5e1" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#94a3b8" stopOpacity="0" />
+                </radialGradient>
+
+      <linearGradient id="skyDayGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#4178c7" />
+                  <stop offset="40%" stopColor="#679be0" />
+                  <stop offset="75%" stopColor="#9fc1ed" />
+                  <stop offset="100%" stopColor="#d5e3f7" />
+                </linearGradient>
+
+      <linearGradient id="skyNightGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#060b18" />
+                  <stop offset="45%" stopColor="#0b152b" />
+                  <stop offset="80%" stopColor="#12203d" />
+                  <stop offset="100%" stopColor="#18294a" />
+                </linearGradient>
+
+      <linearGradient id="skySunsetGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2e1065" />
+                  <stop offset="35%" stopColor="#7c2d12" />
+                  <stop offset="65%" stopColor="#c2410c" />
+                  <stop offset="100%" stopColor="#fed7aa" />
+                </linearGradient>
+
+      <radialGradient id="sunGlowGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="1" />
+                  <stop offset="30%" stopColor="#fef08a" stopOpacity="0.85" />
+                  <stop offset="60%" stopColor="#fbbf24" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+                </radialGradient>
+
+      <radialGradient id="lotusCoreGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#fef08a" />
+                  <stop offset="70%" stopColor="#f59e0b" />
+                  <stop offset="100%" stopColor="#b45309" />
+                </radialGradient>
+
+      <radialGradient id="sunflowerDiscGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#78350f" />
+                  <stop offset="65%" stopColor="#451a03" />
+                  <stop offset="100%" stopColor="#1c0a00" />
+                </radialGradient>
+
+      <linearGradient id="mtnDistantHazeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={isNight ? "#09121f" : sunsetFactor > 0.25 ? "#581c87" : "#5b7696"} stopOpacity="0.85" />
+                  <stop offset="60%" stopColor={isNight ? "#0b1728" : sunsetFactor > 0.25 ? "#701a75" : "#718ea8"} stopOpacity="0.65" />
+                  <stop offset="100%" stopColor={isNight ? "#0e1d33" : sunsetFactor > 0.25 ? "#9d174d" : "#8eaac2"} stopOpacity="0.35" />
+                </linearGradient>
+
+      <linearGradient id="mtnValleyMistGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={isNight ? "#0a1424" : sunsetFactor > 0.25 ? "#831843" : "#dbeafe"} stopOpacity="0" />
+                  <stop offset="50%" stopColor={isNight ? "#0d1a2d" : sunsetFactor > 0.25 ? "#9d174d" : "#bfdbfe"} stopOpacity="0.45" />
+                  <stop offset="100%" stopColor={isNight ? "#09121f" : sunsetFactor > 0.25 ? "#701a75" : "#93c5fd"} stopOpacity="0.1" />
+                </linearGradient>
+
+      <linearGradient id="shorelineBankGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={isNight ? "#0a1320" : "#1a2c3d"} />
+                  <stop offset="65%" stopColor={isNight ? "#070e17" : "#142230"} />
+                  <stop offset="100%" stopColor={isNight ? "#04080e" : "#0d1620"} />
+                </linearGradient>
+
+      <linearGradient id="waterfallStreamGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                  <stop offset="50%" stopColor="#dbeafe" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#93c5fd" stopOpacity="0.98" />
+                </linearGradient>
+
+      <radialGradient id="lunarWaveGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                  <stop offset="40%" stopColor="#e0f2fe" stopOpacity="0.8" />
+                  <stop offset="75%" stopColor="#7dd3fc" stopOpacity="0.35" />
+                  <stop offset="100%" stopColor="#38bdf8" stopOpacity="0" />
+                </radialGradient>
+
+      <linearGradient id="moonColumnWash" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.42" />
+                  <stop offset="35%" stopColor="#bae6fd" stopOpacity="0.28" />
+                  <stop offset="70%" stopColor="#7dd3fc" stopOpacity="0.14" />
+                  <stop offset="100%" stopColor="#0284c7" stopOpacity="0.0" />
+                </linearGradient>
+
+      <radialGradient id="solarWaveGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#ffffff" stopOpacity="0.95" />
+                  <stop offset="35%" stopColor="#fef08a" stopOpacity="0.85" />
+                  <stop offset="70%" stopColor="#f59e0b" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#d97706" stopOpacity="0" />
+                </radialGradient>
+
+      <linearGradient id="sunsetColumnWash" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#fed7aa" stopOpacity="0.55" />
+                  <stop offset="35%" stopColor="#fb923c" stopOpacity="0.42" />
+                  <stop offset="70%" stopColor="#ea580c" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#9a3412" stopOpacity="0.0" />
+                </linearGradient>
+
+      <radialGradient id="sunsetWaveGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor="#fff7ed" stopOpacity="0.95" />
+                  <stop offset="35%" stopColor="#fed7aa" stopOpacity="0.85" />
+                  <stop offset="70%" stopColor="#ea580c" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#9a3412" stopOpacity="0" />
+                </radialGradient>
+
+      <linearGradient id="hillBackMeadowGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={isNight ? "#0d2618" : sunsetFactor > 0.3 ? "#784b1b" : "#4e8c5c"} />
+                  <stop offset="40%" stopColor={isNight ? "#0a1f13" : sunsetFactor > 0.3 ? "#543d1a" : "#3b7a4a"} />
+                  <stop offset="80%" stopColor={isNight ? "#07170e" : sunsetFactor > 0.3 ? "#2d3d22" : "#2d633b"} />
+                  <stop offset="100%" stopColor={isNight ? "#05120b" : sunsetFactor > 0.3 ? "#1e2e18" : "#224f2f"} />
+                </linearGradient>
+
+      <linearGradient id="hillRidgeSunlitGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor={isNight ? "#1e402c" : sunsetFactor > 0.35 ? "#f59e0b" : "#86efac"} stopOpacity={isNight ? "0.4" : "0.85"} />
+                  <stop offset="50%" stopColor={isNight ? "#153322" : sunsetFactor > 0.35 ? "#d97706" : "#4ade80"} stopOpacity={isNight ? "0.2" : "0.6"} />
+                  <stop offset="100%" stopColor={isNight ? "#0a2215" : sunsetFactor > 0.35 ? "#92400e" : "#22c55e"} stopOpacity="0" />
+                </linearGradient>
+
+      <radialGradient id="hillSwaleShadowGrad" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor={isNight ? "#030a06" : "#0d2b17"} stopOpacity="0.55" />
+                  <stop offset="60%" stopColor={isNight ? "#05140b" : "#143d22"} stopOpacity="0.3" />
+                  <stop offset="100%" stopColor={isNight ? "#082012" : "#1d522e"} stopOpacity="0" />
+                </radialGradient>
+
+      <radialGradient id="riverStoneGrad1" cx="35%" cy="30%" r="70%">
+                  <stop offset="0%" stopColor={isNight ? "#475569" : sunsetFactor > 0.3 ? "#a89984" : "#94a3b8"} />
+                  <stop offset="45%" stopColor={isNight ? "#334155" : sunsetFactor > 0.3 ? "#786958" : "#64748b"} />
+                  <stop offset="85%" stopColor={isNight ? "#1e293b" : sunsetFactor > 0.3 ? "#4d4135" : "#475569"} />
+                  <stop offset="100%" stopColor={isNight ? "#0f172a" : sunsetFactor > 0.3 ? "#292119" : "#334155"} />
+                </radialGradient>
+
+      <radialGradient id="riverStoneGrad2" cx="38%" cy="28%" r="68%">
+                  <stop offset="0%" stopColor={isNight ? "#64748b" : sunsetFactor > 0.3 ? "#b8a896" : "#cbd5e1"} />
+                  <stop offset="50%" stopColor={isNight ? "#475569" : sunsetFactor > 0.3 ? "#8a7a6b" : "#94a3b8"} />
+                  <stop offset="90%" stopColor={isNight ? "#334155" : sunsetFactor > 0.3 ? "#54463a" : "#64748b"} />
+                  <stop offset="100%" stopColor={isNight ? "#1e293b" : sunsetFactor > 0.3 ? "#2d241c" : "#475569"} />
+                </radialGradient>
+
+      <linearGradient id="shorelineLappingGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={isNight ? "#38bdf8" : sunsetFactor > 0.3 ? "#fed7aa" : "#e0f2fe"} stopOpacity="0.75" />
+                  <stop offset="60%" stopColor={isNight ? "#0284c7" : sunsetFactor > 0.3 ? "#fb923c" : "#bae6fd"} stopOpacity="0.45" />
+                  <stop offset="100%" stopColor={isNight ? "#0369a1" : sunsetFactor > 0.3 ? "#c2410c" : "#93c5fd"} stopOpacity="0" />
+                </linearGradient>
+
+      <linearGradient id="shorelineMoistEarthGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor={isNight ? "#162017" : "#444030"} />
+                  <stop offset="45%" stopColor={isNight ? "#101711" : "#2f2d22"} />
+                  <stop offset="80%" stopColor={isNight ? "#0b100c" : "#1e1d17"} />
+                  <stop offset="100%" stopColor={isNight ? "#060907" : "#121410"} />
+                </linearGradient>
+
+      <radialGradient id="treeRootMoundGrad" cx="45%" cy="35%" r="65%">
+                  <stop offset="0%" stopColor={isNight ? "#123824" : "#326e45"} />
+                  <stop offset="45%" stopColor={isNight ? "#0b2618" : "#225232"} />
+                  <stop offset="80%" stopColor={isNight ? "#06180f" : "#153a22"} />
+                  <stop offset="100%" stopColor={isNight ? "#030c08" : "#0d2616"} />
+                </radialGradient>
+
+      <linearGradient id="buttercupGlossGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#d97706" />
+                  <stop offset="40%" stopColor="#eab308" />
+                  <stop offset="85%" stopColor="#facc15" />
+                  <stop offset="100%" stopColor="#fef08a" />
+                </linearGradient>
+
+      <linearGradient id="cloverHeadGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#e11d48" />
+                  <stop offset="60%" stopColor="#f43f5e" />
+                  <stop offset="100%" stopColor="#fbcfe8" />
+                </linearGradient>
+
+      <linearGradient id="daisyRayGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#cbd5e1" />
+                  <stop offset="25%" stopColor="#f1f5f9" />
+                  <stop offset="100%" stopColor="#ffffff" />
+                </linearGradient>
+
+      <linearGradient id="edelweissBractGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#cbd5e1" />
+                  <stop offset="45%" stopColor="#f1f5f9" />
+                  <stop offset="100%" stopColor="#ffffff" />
+                </linearGradient>
+
+      <linearGradient id="forgetMeNotGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#0369a1" />
+                  <stop offset="50%" stopColor="#0284c7" />
+                  <stop offset="100%" stopColor="#38bdf8" />
+                </linearGradient>
+
+      <linearGradient id="poppyPetalGrad" x1="0" y1="1" x2="0" y2="0">
+                  <stop offset="0%" stopColor="#b91c1c" />
+                  <stop offset="35%" stopColor="#dc2626" />
+                  <stop offset="75%" stopColor="#ea580c" />
+                  <stop offset="100%" stopColor="#f97316" />
+                </linearGradient>
+
+      <linearGradient id="cowHornGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#292524" />
+                  <stop offset="35%" stopColor="#57534e" />
+                  <stop offset="70%" stopColor="#e7e5e4" />
+                  <stop offset="100%" stopColor="#fef9c3" />
+                </linearGradient>
+
+      <linearGradient id="cowbellGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stopColor="#fef08a" />
+                  <stop offset="40%" stopColor="#eab308" />
+                  <stop offset="85%" stopColor="#ca8a04" />
+                  <stop offset="100%" stopColor="#854d0e" />
+                </linearGradient>
+
+      <linearGradient id="cowDorsalGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stopColor="#a85222" />
+                  <stop offset="50%" stopColor="#ca6b33" />
+                  <stop offset="100%" stopColor="#a85222" />
+                </linearGradient>
+
     </defs>
   )
 }
+
+export default React.memo(BotanicalDefs)
+export { BotanicalDefs }

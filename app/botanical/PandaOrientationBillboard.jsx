@@ -9,16 +9,9 @@ import { motion } from 'framer-motion'
 ══════════════════════════════════════════════════════════════════ */
 export default function PandaOrientationBillboard({ onProceed }) {
   const [shake, setShake] = useState(false)
-  const [showError, setShowError] = useState(false)
 
-  const checkAndEnter = () => {
-    if (typeof window !== 'undefined' && window.innerWidth > window.innerHeight) {
-      onProceed()
-    } else {
-      setShake(true)
-      setShowError(true)
-      setTimeout(() => setShake(false), 600)
-    }
+  const handleEnter = () => {
+    onProceed?.()
   }
 
   return (
@@ -109,56 +102,22 @@ export default function PandaOrientationBillboard({ onProceed }) {
           📱
         </motion.div>
 
-        {showError && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            style={{
-              background: '#fee2e2',
-              color: '#b91c1c',
-              padding: '6px 12px',
-              borderRadius: '10px',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              marginBottom: '10px',
-              border: '1px solid #f87171',
-            }}
-          >
-            ⚠️ Screen is still in portrait! Please turn phone sideways 🔄
-          </motion.div>
-        )}
-
         <button
-          onClick={checkAndEnter}
+          onClick={handleEnter}
           style={{
             width: '100%',
             background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
             color: '#ffffff',
             border: 'none',
             borderRadius: '24px',
-            padding: '11px 18px',
-            fontSize: '0.96rem',
+            padding: '12px 20px',
+            fontSize: '1rem',
             fontWeight: 800,
             cursor: 'pointer',
             boxShadow: '0 6px 18px rgba(16, 185, 129, 0.45)',
           }}
         >
-          Check Orientation & Enter Valley ✨
-        </button>
-
-        <button
-          onClick={onProceed}
-          style={{
-            marginTop: '8px',
-            background: 'transparent',
-            border: 'none',
-            color: '#64748b',
-            fontSize: '0.74rem',
-            cursor: 'pointer',
-            textDecoration: 'underline',
-          }}
-        >
-          Continue Anyway in current view
+          Enter Enchanted Valley 🌸
         </button>
       </motion.div>
     </section>

@@ -206,6 +206,8 @@ function FloatingWaterLily({ cx = 700, cy = 680, bloom = 1.0, onInspect }) {
 
 
 function FloatingLotuses({ bloom = 1.0, isNight, onInspect }) {
+  const bloomFactor = bloom
+  const handleInspect = onInspect
   return (
     <g id="floating-aquatic-lotuses">
         {/* ── 15. FLOATING LILY PADS (ORGANIC PELTATE LEAVES RESTING FLAT ON WATER) ── */}

@@ -75,12 +75,12 @@ function RealisticWaterGlade({
   isNight,
   sunPos,
   moonPos,
-  directSunFactor,
-  sunsetFactor,
-  nightFactor,
-  simTick,
+  directSunFactor = 1,
+  sunsetFactor = 0,
+  nightFactor = 0,
+  simTick = 0,
 }) {
-  const targetX = isNight ? moonPos.x : sunPos.x
+  const targetX = isNight ? (moonPos?.x ?? 380) : (sunPos?.x ?? 380)
   const columnFill = isNight
     ? 'url(#moonColumnWash)'
     : sunsetFactor > 0.25
@@ -610,7 +610,9 @@ function AlpineLakeBridge({
   isNight,
   sunsetFactor,
   directSunFactor,
+  nightFactor = 0,
   sunPos,
+  moonPos,
   simTick,
   onInspect,
   waterRipples = [],
@@ -634,7 +636,9 @@ function AlpineLakeBridge({
         isNight={isNight}
         sunsetFactor={sunsetFactor}
         directSunFactor={directSunFactor}
+        nightFactor={nightFactor}
         sunPos={sunPos}
+        moonPos={moonPos}
         simTick={simTick}
         waterRipples={waterRipples}
       />
