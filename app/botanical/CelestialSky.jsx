@@ -79,11 +79,7 @@ function CelestialSky({
 
         {/* ── 3b. CREPUSCULAR GOD RAYS (STREAMING DOWN FROM SUN INTO VALLEY) ── */}
         {!isNight && (
-          <g
-            opacity={isDraggingSun ? 0 : (1 - nightFactor) * 0.24 * (directSunFactor * directSunFactor)}
-            style={{ transition: 'opacity 0.22s ease' }}
-            pointerEvents="none"
-          >
+          <g opacity={(1 - nightFactor) * 0.24 * (directSunFactor * directSunFactor)} pointerEvents="none">
             <polygon
               points={`${sunPos.x},${sunPos.y} ${sunPos.x - 420},900 ${sunPos.x - 220},900`}
               fill="url(#godRayGrad)"

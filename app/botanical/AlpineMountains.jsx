@@ -458,12 +458,5 @@ function RealisticMountainRange({
 ══════════════════════════════════════════════════════════════════ */
 
 
-export default React.memo(RealisticMountainRange, (prev, next) => {
-  return (
-    prev.isNight === next.isNight &&
-    Math.abs((prev.sunsetFactor || 0) - (next.sunsetFactor || 0)) < 0.08 &&
-    Math.abs((prev.directSunFactor || 0) - (next.directSunFactor || 0)) < 0.08 &&
-    Math.abs((prev.mountainOcclusion || 0) - (next.mountainOcclusion || 0)) < 0.08
-  )
-})
+export default React.memo(RealisticMountainRange)
 export { getMountainRidgeY }

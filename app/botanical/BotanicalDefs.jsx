@@ -630,10 +630,5 @@ function BotanicalDefs({ isNight = false, sunsetFactor = 0 }) {
   )
 }
 
-export default React.memo(BotanicalDefs, (prev, next) => {
-  return (
-    prev.isNight === next.isNight &&
-    Math.abs((prev.sunsetFactor || 0) - (next.sunsetFactor || 0)) < 0.08
-  )
-})
+export default React.memo(BotanicalDefs)
 export { BotanicalDefs }
