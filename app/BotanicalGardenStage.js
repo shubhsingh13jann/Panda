@@ -28,6 +28,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   const [isDraggingMoon, setIsDraggingMoon] = useState(false)
   const [activeSpecimen, setActiveSpecimen] = useState(null)
   const [bloomingGift, setBloomingGift] = useState(false)
+  const [waterRipples, setWaterRipples] = useState([])
 
   const svgRef = useRef(null)
   const draggingRef = useRef(null) // null | 'sun' | 'moon'
@@ -318,6 +319,22 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   const handleMoonPointerDown = (e) => {
     const c = extractCoords(e)
     startCelestialDrag(c.clientX, c.clientY, e)
+  }
+
+  const handlePointerMove = (e) => {
+    const c = extractCoords(e)
+    moveCelestialDrag(c.clientX, c.clientY, e)
+  }
+
+  const handleLakePointerDown = (e) => {
+    const c = extractCoords(e)
+    const pt = getSvgPoint(c.clientX, c.clientY)
+    if (pt.y >= 520 && pt.y <= 880) {
+      setWaterRipples((prev) => [
+        ...prev.slice(-4),
+        { id: Date.now(), x: pt.x, y: pt.y },
+      ])
+    }
   }
 
   // ── GLOBAL BULLETPROOF BI-DIRECTIONAL WINDOW POINTER & TOUCH LISTENER ──
