@@ -10,6 +10,7 @@ import { CAKE_SPARKLES } from './cakeSparkles'
 const EnvelopePromise = dynamic(() => import('./EnvelopePromise'), { ssr: false })
 const HeartParticles = dynamic(() => import('./HeartParticles'), { ssr: false })
 const CakeHeartAnimation = dynamic(() => import('./CakeHeartAnimation'), { ssr: false })
+import RealisticCurtainStage from './RealisticCurtainStage'
 
 import photo1 from '../Images/1775886681934.png'
 import photo2 from '../Images/1775886682054.png'
@@ -250,6 +251,8 @@ export default function BirthdayPage() {
   const [candleBlown, setCandleBlown] = useState(false)
   const [giftOpening, setGiftOpening] = useState(false)
   const [giftBurstKey, setGiftBurstKey] = useState(0)
+  const [curtainDismissed, setCurtainDismissed] = useState(false)
+  const [curtainStarted, setCurtainStarted] = useState(false)
 
   /* ── Canvas sparkles ── */
   useEffect(() => {
@@ -501,6 +504,12 @@ export default function BirthdayPage() {
       {/* ══ STAGE: CAKE ══ */}
       {stage === 'cake' && (
         <section className="cake-screen">
+          {!curtainDismissed && (
+            <RealisticCurtainStage
+              onStart={() => setCurtainStarted(true)}
+              onFinish={() => setCurtainDismissed(true)}
+            />
+          )}
           <AmbientFloatingHearts />
           <div className="cake-stars" aria-hidden="true">
             {CAKE_SPARKLES.map((sparkle) => (
@@ -519,7 +528,11 @@ export default function BirthdayPage() {
           </div>
 
           <div className="cake-stage-shell">
-            <CakeHeartAnimation scaleMultiplier={1.05} style={{ zIndex: -1 }} />
+            <CakeHeartAnimation
+              started={curtainStarted || curtainDismissed}
+              scaleMultiplier={1}
+              style={{ zIndex: -1 }}
+            />
             <div className="cake-header">
               <p className="cake-eyebrow">✨ A Very Special Birthday Celebration ✨</p>
               <h2 className="cake-title">Make a Wish, Gg!</h2>
