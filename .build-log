@@ -11,3 +11,4 @@
 [2026-12-06T17:45:00] test(stage-machine): add debug controls and stage switching shortcuts
 [2026-12-07T10:15:00] feat(stage-1): build panda envelope container with animated ears
 [2026-12-07T18:30:00] feat(stage-1): implement interactive blinking panda eyes and snout
+[2026-12-08T11:00:00] feat(stage-1): integrate 3d three.js points particle cloud behind envelope
