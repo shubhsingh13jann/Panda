@@ -253,12 +253,12 @@ export default function EnvelopePromise({ openingEnvelope, onPromise }) {
           animate={
             lidOpen
               ? {
-                  y: -115,
+                  y: 0,
                   scale: 1,
                   opacity: 1,
                 }
               : {
-                  y: 40,
+                  y: 45,
                   scale: 0.92,
                   opacity: 0,
                 }
