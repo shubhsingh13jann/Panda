@@ -476,7 +476,7 @@ export default function BirthdayPage() {
           <div className="promise-stars" aria-hidden="true" />
           <div className="promise-aura promise-aura-left" aria-hidden="true" />
           <div className="promise-aura promise-aura-right" aria-hidden="true" />
-          <div className={heartsActive ? 'shattering' : ''}>
+          <div className={heartsActive ? 'shattering' : ''} style={{ width: '100%', display: 'flex', justifyContent: 'center', zIndex: 10 }}>
             <EnvelopePromise
               openingEnvelope={openingEnvelope}
               onPromise={handlePromise}
