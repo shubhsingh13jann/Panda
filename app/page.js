@@ -510,24 +510,34 @@ export default function BirthdayPage() {
               onFinish={() => setCurtainDismissed(true)}
             />
           )}
-          <AmbientFloatingHearts />
-          <div className="cake-stars" aria-hidden="true">
-            {CAKE_SPARKLES.map((sparkle) => (
-              <span
-                key={`${sparkle.left}-${sparkle.top}`}
-                className="cake-star"
-                style={{
-                  left: `${sparkle.left}%`,
-                  top: `${sparkle.top}%`,
-                  width: `${sparkle.size}px`,
-                  height: `${sparkle.size}px`,
-                  animationDelay: `${sparkle.delay}s`,
-                }}
-              />
-            ))}
-          </div>
+          {(curtainStarted || curtainDismissed) && <AmbientFloatingHearts />}
+          {(curtainStarted || curtainDismissed) && (
+            <div className="cake-stars" aria-hidden="true">
+              {CAKE_SPARKLES.map((sparkle) => (
+                <span
+                  key={`${sparkle.left}-${sparkle.top}`}
+                  className="cake-star"
+                  style={{
+                    left: `${sparkle.left}%`,
+                    top: `${sparkle.top}%`,
+                    width: `${sparkle.size}px`,
+                    height: `${sparkle.size}px`,
+                    animationDelay: `${sparkle.delay}s`,
+                  }}
+                />
+              ))}
+            </div>
+          )}
 
-          <div className="cake-stage-shell">
+          <div
+            className="cake-stage-shell"
+            style={{
+              opacity: (curtainStarted || curtainDismissed) ? 1 : 0,
+              visibility: (curtainStarted || curtainDismissed) ? 'visible' : 'hidden',
+              pointerEvents: (curtainStarted || curtainDismissed) ? 'auto' : 'none',
+              transition: 'opacity 0.6s ease',
+            }}
+          >
             <CakeHeartAnimation
               started={curtainStarted || curtainDismissed}
               scaleMultiplier={1}

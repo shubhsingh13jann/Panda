@@ -530,8 +530,8 @@ export default function RealisticCurtainStage({ onStart, onFinish }) {
         // Solid emerald before click: 100% ZERO glimpse of next page
         background: isOpeningState ? 'transparent' : '#011c15',
         pointerEvents: opened ? 'none' : 'auto',
-        opacity: opened ? 0 : (fadeIn ? 1 : 0),
-        transition: opened ? 'opacity 1s ease-out' : 'opacity 0.85s ease-out',
+        opacity: opened ? 0 : ((fadeIn || isOpeningState) ? 1 : 0),
+        transition: opened ? 'opacity 1s ease-out' : (isOpeningState ? 'none' : 'opacity 0.85s ease-out'),
         cursor: opened ? 'default' : 'pointer',
       }}
       aria-label="Realistic Curtain Stage"
