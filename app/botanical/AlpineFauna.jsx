@@ -768,7 +768,7 @@ function RedDeerFamily({ isNight, isDeerDrinking, onInspect }) {
             </g>
           ) : (
             /* ── NIGHTTIME BEDDED STAG (STERNAL RECUMBENCY FIRMLY ON GROUND, VISIBLE FOLDED LEGS & MOONLIT ANTLERS) ── */
-            <g id="nighttime-bedded-stag">
+            <g id="nighttime-bedded-stag" style={{ display: "none" }}>
               {/* Soft Ambient Ground Contact Shadow: Anchors the entire resting deer solidly to the turf */}
               <ellipse cx="6" cy="74" rx="52" ry="7.5" fill="#020804" opacity="0.65" filter="blur(3.5px)" />
               <ellipse cx="14" cy="74" rx="26" ry="5.0" fill="#010402" opacity="0.75" filter="blur(2px)" />
@@ -1034,7 +1034,7 @@ function RedDeerFamily({ isNight, isDeerDrinking, onInspect }) {
             </g>
           ) : (
             /* ── NIGHTTIME BEDDED BABY FAWN (COZY & GROUNDED ON TURF BESIDE STAG) ── */
-            <g id="nighttime-bedded-fawn" transform="translate(70, 52) scale(0.60)">
+            <g id="nighttime-bedded-fawn" style={{ display: "none" }}" transform="translate(70, 52) scale(0.60)">
               {/* Soft Ambient Ground Shadow under Fawn: Anchors firmly to cy=74 */}
               <ellipse cx="2" cy="35" rx="28" ry="6" fill="#020804" opacity="0.60" filter="blur(2.5px)" />
               {/* Curled Body in Sternal Repose */}
@@ -1089,7 +1089,7 @@ function AlpineFauna({ isNight, isDeerDrinking, onInspect }) {
       <RealisticAlpineCows isNight={isNight} onInspect={onInspect} />
 
       {/* Red Deer Stag with Royal Antlers & Baby Fawn */}
-      {/* <RedDeerFamily /> */}
+      <RedDeerFamily isNight={isNight} isDeerDrinking={isDeerDrinking} onInspect={onInspect} />
     </g>
   )
 }
