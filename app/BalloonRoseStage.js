@@ -117,6 +117,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
   const x = balloon.xPct * sw
   const y = balloon.yPct * sh
 
+  // Screen-specific aerostat radius
   const r = Math.max(38, Math.min(58, sw * 0.056))
   const ry = r * 1.35
 
@@ -127,6 +128,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
   const offsetX = useMotionValue(0)
   const offsetY = useMotionValue(0)
 
+  // Rigging suspension cables reaching down to the wicker hot-air basket
   const ropeLeftD = useTransform([offsetX, offsetY], ([ox, oy]) => {
     const bx = x - r * 0.28 + ox
     const by = y + ry * 0.95 + oy
@@ -141,6 +143,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
     return `M ${bx} ${by} C ${bx} ${(by + basketAnchorY) / 2}, ${(bx + tx) / 2} ${(by + basketAnchorY) / 2 + 15}, ${tx} ${basketAnchorY}`
   })
 
+  // Confetti burst particles
   const confetti = useMemo(
     () =>
       Array.from({ length: 24 }).map(() => ({
@@ -153,6 +156,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
     [theme]
   )
 
+  // Hot-air balloon contour path (bulbous dome top tapering to burner base)
   const balloonOutline = `
     M ${x - r * 0.24} ${y + ry * 0.92}
     C ${x - r * 0.88} ${y + ry * 0.52}, ${x - r * 1.05} ${y - ry * 0.25}, ${x - r * 0.72} ${y - ry * 0.78}
@@ -163,6 +167,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
 
   return (
     <g style={{ pointerEvents: popped ? 'none' : 'auto' }}>
+      {/* Rigging Suspension Cables */}
       <AnimatePresence>
         {!popped && (
           <>
@@ -188,6 +193,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
         )}
       </AnimatePresence>
 
+      {/* Hot-Air Panda Balloon Body */}
       <AnimatePresence>
         {!popped && (
           <motion.g
@@ -222,8 +228,11 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
               transition={{ duration: dur, repeat: Infinity, ease: 'easeInOut', delay }}
               style={{ transformOrigin: `${x}px ${y}px` }}
             >
+              {/* Aerostat Shadow Aura */}
               <path d={balloonOutline} fill={theme} opacity="0.3" filter="blur(10px)" />
 
+              {/* ── 1. PANDA EARS ON TOP OF AEROSTAT ── */}
+              {/* Left Ear */}
               <circle
                 cx={x - r * 0.68}
                 cy={y - ry * 0.78}
@@ -240,6 +249,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 opacity="0.85"
               />
 
+              {/* Right Ear */}
               <circle
                 cx={x + r * 0.68}
                 cy={y - ry * 0.78}
@@ -256,6 +266,8 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 opacity="0.85"
               />
 
+              {/* ── 2. HOT-AIR BALLOON BODY WITH VERTICAL STRIPES ── */}
+              {/* Base Porcelain Body */}
               <path
                 d={balloonOutline}
                 fill="#ffffff"
@@ -263,6 +275,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 strokeWidth="2.5"
               />
 
+              {/* Left & Right Hot-Air Colored Ribs */}
               <path
                 d={`
                   M ${x - r * 0.24} ${y + ry * 0.92}
@@ -286,6 +299,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 opacity="0.55"
               />
 
+              {/* Glossy Balloon Curving Sheen */}
               <ellipse
                 cx={x - r * 0.35}
                 cy={y - ry * 0.42}
@@ -295,6 +309,8 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 opacity="0.88"
               />
 
+              {/* ── 3. PANDA FACE FEATURES (CENTER OF HOT-AIR BALLOON) ── */}
+              {/* Eye Patches */}
               <ellipse
                 cx={x - r * 0.32}
                 cy={y - ry * 0.04}
@@ -312,8 +328,10 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 fill="#1e293b"
               />
 
+              {/* Eye Expressions */}
               {accessory === 'goggles' ? (
                 <>
+                  {/* Aviator Goggles on Eyes */}
                   <circle cx={x - r * 0.32} cy={y - ry * 0.04} r={r * 0.17} fill="#38bdf8" opacity="0.85" stroke="#fbbf24" strokeWidth="2" />
                   <circle cx={x + r * 0.32} cy={y - ry * 0.04} r={r * 0.17} fill="#38bdf8" opacity="0.85" stroke="#fbbf24" strokeWidth="2" />
                   <line x1={x - r * 0.15} y1={y - ry * 0.04} x2={x + r * 0.15} y2={y - ry * 0.04} stroke="#fbbf24" strokeWidth="2.5" />
@@ -327,6 +345,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 </>
               ) : (
                 <>
+                  {/* Sparkling Anime Eyes */}
                   <circle cx={x - r * 0.32} cy={y - ry * 0.05} r={r * 0.11} fill="#090d16" />
                   <circle cx={x - r * 0.34} cy={y - ry * 0.09} r={r * 0.045} fill="#ffffff" />
                   <circle cx={x - r * 0.29} cy={y - ry * 0.02} r={r * 0.022} fill="#ffffff" />
@@ -337,9 +356,11 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 </>
               )}
 
+              {/* Pink Rosy Cheeks */}
               <circle cx={x - r * 0.52} cy={y + ry * 0.18} r={r * 0.15} fill="#f472b6" opacity="0.65" />
               <circle cx={x + r * 0.52} cy={y + ry * 0.18} r={r * 0.15} fill="#f472b6" opacity="0.65" />
 
+              {/* Cute Nose & Smile */}
               <ellipse cx={x} cy={y + ry * 0.14} rx={r * 0.10} ry={r * 0.07} fill="#0f172a" />
               <path
                 d={`M ${x - r * 0.13} ${y + ry * 0.22} Q ${x} ${y + ry * 0.29} ${x + r * 0.13} ${y + ry * 0.22}`}
@@ -349,6 +370,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 strokeLinecap="round"
               />
 
+              {/* ── 4. ACCESSORY DETAILS ── */}
               {accessory === 'bamboo' && (
                 <g transform={`translate(${x - r * 0.05}, ${y + ry * 0.22}) rotate(25)`}>
                   <rect x="0" y="-3" width={r * 0.45} height="6" rx="2" fill="#10b981" />
@@ -387,6 +409,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 </g>
               )}
 
+              {/* ── 5. HOT-AIR BURNER COLLAR & FLICKERING FLAME ── */}
               <rect
                 x={x - r * 0.22}
                 y={y + ry * 0.92}
@@ -397,6 +420,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
                 stroke="#b45309"
                 strokeWidth="1"
               />
+              {/* Flickering hot-air flame */}
               <path
                 d={`M ${x - 3} ${y + ry * 0.92} Q ${x - 6} ${y + ry * 0.8} ${x} ${y + ry * 0.72} Q ${x + 6} ${y + ry * 0.8} ${x + 3} ${y + ry * 0.92} Z`}
                 fill="#f59e0b"
@@ -407,6 +431,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
         )}
       </AnimatePresence>
 
+      {/* Pop Starburst Effect */}
       {popped && (
         <g>
           {confetti.map((piece, index) => (
@@ -433,7 +458,7 @@ function PandaHotAirBalloon({ balloon, sw, sh, basketAnchorX, basketAnchorY, pop
 }
 
 /* ══════════════════════════════════════════════
-   2. WICKER HOT-AIR BASKET
+   2. WICKER HOT-AIR BASKET (STAGE 1)
 ══════════════════════════════════════════════ */
 
 function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
@@ -442,36 +467,48 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
 
   return (
     <g transform={`translate(${cx}, ${cy})`}>
+      {/* Basket Soft Floating Shadow */}
       <ellipse cx="0" cy={basketH / 2 + 18} rx={basketW * 0.55} ry="14" fill="#011611" opacity="0.6" filter="blur(8px)" />
 
+      {/* ── 1. CUTE COZY PILOT PANDA IN BASKET ── */}
       <g transform={`translate(0, ${-basketH / 2 + 6})`}>
+        {/* Panda Head peeking over rim */}
         <ellipse cx="0" cy="-20" rx="34" ry="26" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1.5" />
+
+        {/* Panda Ears */}
         <ellipse cx="-26" cy="-42" rx="13" ry="11" fill="#1e293b" />
         <ellipse cx="-26" cy="-42" rx="6" ry="5" fill="#f472b6" opacity="0.6" />
         <ellipse cx="26" cy="-42" rx="13" ry="11" fill="#1e293b" />
         <ellipse cx="26" cy="-42" rx="6" ry="5" fill="#f472b6" opacity="0.6" />
 
+        {/* Aviator Goggles on Panda Head */}
         <rect x="-24" y="-36" width="48" height="11" rx="5" fill="#fbbf24" stroke="#92400e" strokeWidth="1" />
         <circle cx="-13" cy="-30" r="6" fill="#38bdf8" />
         <circle cx="13" cy="-30" r="6" fill="#38bdf8" />
         <line x1="-7" y1="-30" x2="7" y2="-30" stroke="#92400e" strokeWidth="2" />
 
+        {/* Eyes & Face */}
         <ellipse cx="-13" cy="-19" rx="8" ry="9" fill="#1e293b" />
         <circle cx="-12" cy="-21" r="3" fill="#ffffff" />
         <ellipse cx="13" cy="-19" rx="8" ry="9" fill="#1e293b" />
         <circle cx="12" cy="-21" r="3" fill="#ffffff" />
 
+        {/* Nose & Smile */}
         <ellipse cx="0" cy="-13" rx="4" ry="3" fill="#0f172a" />
         <path d="M -4 -8 Q 0 -5 4 -8" fill="none" stroke="#0f172a" strokeWidth="1.5" strokeLinecap="round" />
+        {/* Pink Cheeks */}
         <circle cx="-22" cy="-14" r="5.5" fill="#f472b6" opacity="0.6" />
         <circle cx="22" cy="-14" r="5.5" fill="#f472b6" opacity="0.6" />
 
+        {/* Panda Paws resting on the basket rim */}
         <ellipse cx="-38" cy="-2" rx="12" ry="8" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1" />
         <circle cx="-38" cy="-2" r="3" fill="#f472b6" opacity="0.6" />
         <ellipse cx="38" cy="-2" rx="12" ry="8" fill="#ffffff" stroke="#e2e8f0" strokeWidth="1" />
         <circle cx="38" cy="-2" r="3" fill="#f472b6" opacity="0.6" />
       </g>
 
+      {/* ── 2. WOVEN WICKER BASKET BODY ── */}
+      {/* Basket Base */}
       <rect
         x={-basketW / 2}
         y={-basketH / 2}
@@ -482,6 +519,7 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
         stroke="#d97706"
         strokeWidth="2.5"
       />
+      {/* Basket Texture Crosshatches */}
       {[-45, -15, 15, 45, 75].map((yOffset, i) => (
         <line
           key={`weave-h-${i}`}
@@ -495,6 +533,7 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
         />
       ))}
 
+      {/* Basket Top Padded Leather Rim */}
       <rect
         x={-basketW / 2 - 4}
         y={-basketH / 2 - 4}
@@ -506,12 +545,16 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
         strokeWidth="1.2"
       />
 
+      {/* Brass Corner Reinforcements */}
       <circle cx={-basketW / 2 + 10} cy={basketH / 2 - 12} r="4.5" fill="#fbbf24" stroke="#78350f" strokeWidth="1" />
       <circle cx={basketW / 2 - 10} cy={basketH / 2 - 12} r="4.5" fill="#fbbf24" stroke="#78350f" strokeWidth="1" />
 
+      {/* Sandbags on sides */}
       <ellipse cx={-basketW / 2 - 6} cy="10" rx="9" ry="13" fill="#d97706" stroke="#78350f" strokeWidth="1" />
       <ellipse cx={basketW / 2 + 6} cy="10" rx="9" ry="13" fill="#d97706" stroke="#78350f" strokeWidth="1" />
 
+      {/* ── 3. FLIGHT BANNER & PUZZLE SLOTS ── */}
+      {/* Banner */}
       <rect
         x={-basketW / 2 + 14}
         y={-basketH / 2 + 18}
@@ -534,6 +577,7 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
         ★ GG'S BIRTHDAY FLIGHT 🧺 ★
       </text>
 
+      {/* 6 Puzzle Piece Badges on Basket Front */}
       <g transform="translate(0, 16)">
         {Array.from({ length: total }).map((_, i) => {
           const isCollected = i < poppedCount
@@ -566,6 +610,7 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
         })}
       </g>
 
+      {/* Progress Status Text */}
       <text
         x="0"
         y={basketH / 2 - 10}
@@ -587,14 +632,20 @@ function WickerBasket({ cx, cy, poppedCount, total = 6 }) {
 ══════════════════════════════════════════════ */
 
 function PandaPuzzleGame({ onSolved }) {
+  // 6 slots on the board: null if empty, or { id: number }
   const [boardSlots, setBoardSlots] = useState([null, null, null, null, null, null])
+
+  // Unplaced pieces in tray, initially shuffled
   const [trayPieces, setTrayPieces] = useState(() => {
     return [3, 0, 5, 1, 4, 2].map((id) => ({ id }))
   })
+
+  // Selected piece for tap-to-place
   const [selectedPiece, setSelectedPiece] = useState(null)
   const [showHint, setShowHint] = useState(false)
   const [isSolved, setIsSolved] = useState(false)
 
+  // Verify puzzle completion
   useEffect(() => {
     const allFilled = boardSlots.every((p, idx) => p !== null && p.id === idx)
     if (allFilled && !isSolved) {
@@ -605,6 +656,7 @@ function PandaPuzzleGame({ onSolved }) {
     }
   }, [boardSlots, isSolved, onSolved])
 
+  // Tap piece in tray
   const handleTrayPieceClick = (index) => {
     if (isSolved) return
     const piece = trayPieces[index]
@@ -615,6 +667,7 @@ function PandaPuzzleGame({ onSolved }) {
     }
   }
 
+  // Tap slot on board
   const handleBoardSlotClick = (slotIdx) => {
     if (isSolved) return
     const currentInSlot = boardSlots[slotIdx]
@@ -649,6 +702,7 @@ function PandaPuzzleGame({ onSolved }) {
     }
   }
 
+  // Return piece to tray
   const handleReturnToTray = (slotIdx, e) => {
     e.stopPropagation()
     if (isSolved) return
@@ -679,6 +733,7 @@ function PandaPuzzleGame({ onSolved }) {
         userSelect: 'none',
       }}
     >
+      {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '12px' }}>
         <h3
           style={{
@@ -709,6 +764,7 @@ function PandaPuzzleGame({ onSolved }) {
         </p>
       </div>
 
+      {/* ── JIGSAW BOARD (3 COLUMNS x 2 ROWS) ── */}
       <div
         style={{
           position: 'relative',
@@ -724,6 +780,7 @@ function PandaPuzzleGame({ onSolved }) {
           overflow: 'hidden',
         }}
       >
+        {/* Full solved artwork */}
         <AnimatePresence>
           {isSolved && (
             <motion.div
@@ -744,6 +801,7 @@ function PandaPuzzleGame({ onSolved }) {
           )}
         </AnimatePresence>
 
+        {/* 6 Grid Slots */}
         <div
           style={{
             display: 'grid',
@@ -787,6 +845,7 @@ function PandaPuzzleGame({ onSolved }) {
                   justifyContent: 'center',
                 }}
               >
+                {/* Translucent hint watermark */}
                 {(showHint || !piece) && (
                   <div
                     style={{
@@ -802,6 +861,7 @@ function PandaPuzzleGame({ onSolved }) {
                   </div>
                 )}
 
+                {/* Empty slot number */}
                 {!piece && !showHint && (
                   <span
                     style={{
@@ -815,10 +875,12 @@ function PandaPuzzleGame({ onSolved }) {
                   </span>
                 )}
 
+                {/* Placed piece */}
                 {piece && (
                   <div style={{ width: '100%', height: '100%', position: 'relative' }}>
                     <PandaPuzzleTile pieceId={piece.id} />
 
+                    {/* Correct match gold checkmark badge */}
                     {isCorrect && !isSolved && (
                       <div
                         style={{
@@ -842,6 +904,7 @@ function PandaPuzzleGame({ onSolved }) {
                       </div>
                     )}
 
+                    {/* Return piece button */}
                     {!isSolved && !isCorrect && (
                       <button
                         onClick={(e) => handleReturnToTray(slotIdx, e)}
@@ -876,6 +939,7 @@ function PandaPuzzleGame({ onSolved }) {
         </div>
       </div>
 
+      {/* ── CONTROLS & HINT BUTTON ── */}
       {!isSolved && (
         <div
           style={{
@@ -921,6 +985,7 @@ function PandaPuzzleGame({ onSolved }) {
         </div>
       )}
 
+      {/* ── UNPLACED PIECES TRAY ── */}
       {!isSolved && trayPieces.length > 0 && (
         <div
           style={{
@@ -1064,6 +1129,7 @@ function Lotus({ cx, cy, scale = 1, onComplete }) {
         </g>
       ))}
 
+      {/* Golden Glowing Stamen */}
       <motion.circle
         cx={cx}
         cy={cy}
@@ -1078,22 +1144,26 @@ function Lotus({ cx, cy, scale = 1, onComplete }) {
 }
 
 /* ══════════════════════════════════════════════
-   5. MAIN STAGE ORCHESTRATOR
+   5. MAIN STAGE ORCHESTRATOR (CONCEPT 2)
 ══════════════════════════════════════════════ */
 
 export default function BalloonRoseStage({ onComplete }) {
   const { w: sw, h: sh } = useScreenSize()
 
+  // Track popped / untethered balloon IDs
   const [poppedIds, setPoppedIds] = useState(new Set())
+
+  // Stage: 'balloons' -> 'puzzle' -> 'shayari' -> 'lotus'
   const [stage, setStage] = useState('balloons')
 
   const basketX = sw / 2
-  const basketY = sh * 0.64
+  const basketY = sh * 0.58
   const basketAnchorX = basketX
   const basketAnchorY = basketY - 60
 
   const allPopped = poppedIds.size === PANDA_HOT_AIR_CONFIG.length
 
+  // Transition from balloons to puzzle once all 6 are released
   useEffect(() => {
     if (allPopped && stage === 'balloons') {
       const timer = setTimeout(() => {
@@ -1124,7 +1194,7 @@ export default function BalloonRoseStage({ onComplete }) {
         justifyContent: 'center',
       }}
     >
-      {/* ── STAGE 1: PANDA HOT-AIR BALLOONS & WICKER BASKET ── */}
+      {/* ── STAGE 1: PANDA HOT-AIR BALLOONS & WICKER BASKET (SVG) ── */}
       {stage === 'balloons' && (
         <svg
           width="100%"
@@ -1132,6 +1202,7 @@ export default function BalloonRoseStage({ onComplete }) {
           style={{ width: '100%', height: '100%', display: 'block' }}
           viewBox={`0 0 ${sw} ${sh}`}
         >
+          {/* Floating Hot-Air Wicker Basket */}
           <WickerBasket
             cx={basketX}
             cy={basketY}
@@ -1139,6 +1210,7 @@ export default function BalloonRoseStage({ onComplete }) {
             total={6}
           />
 
+          {/* 6 Giant Panda Hot-Air Balloons */}
           {PANDA_HOT_AIR_CONFIG.map((balloon) => (
             <PandaHotAirBalloon
               key={balloon.id}
@@ -1171,7 +1243,7 @@ export default function BalloonRoseStage({ onComplete }) {
         </div>
       )}
 
-      {/* ── STAGE 3: SHAYARI LETTER ── */}
+      {/* ── STAGE 3: SHAYARI LETTER (UNLOCKED AFTER SOLVING JIGSAW) ── */}
       {stage === 'shayari' && (
         <motion.div
           initial={{ opacity: 0, scale: 0.85, y: 30 }}
@@ -1252,30 +1324,34 @@ export default function BalloonRoseStage({ onComplete }) {
         </svg>
       )}
 
-      {/* ── TOP BANNER MESSAGE ── */}
+      {/* ── BOTTOM BANNER MESSAGE (BELOW BASKET AREA) ── */}
       {stage === 'balloons' && (
         <div
           style={{
             position: 'absolute',
-            top: '1.5rem',
+            bottom: 'clamp(1rem, 3vh, 2.4rem)',
             left: '50%',
             transform: 'translateX(-50%)',
             textAlign: 'center',
             pointerEvents: 'none',
             userSelect: 'none',
             zIndex: 2,
-            width: 'min(96vw, 980px)',
+            width: 'min(94vw, 920px)',
+            padding: '0 12px',
+            boxSizing: 'border-box',
           }}
         >
           <motion.p
-            initial={{ opacity: 0, y: -8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             style={{
-              color: 'rgba(255,255,255,0.95)',
-              fontSize: 'clamp(1.15rem, 2.4vw, 1.95rem)',
+              margin: 0,
+              color: 'rgba(255,255,255,0.96)',
+              fontSize: 'clamp(1.05rem, 2.2vw, 1.85rem)',
               fontFamily: "'Dancing Script', cursive",
               fontWeight: 700,
-              textShadow: '0 2px 14px rgba(0,0,0,0.5)',
+              textShadow: '0 2px 14px rgba(0,0,0,0.6)',
+              lineHeight: 1.4,
             }}
           >
             Gg🐼! Saare 6 Panda Hot-Air Balloons ko tap karke basket ko safe utaro! 🎈🧺 — Har balloon me chhipa hai 1 puzzle piece! 🧩
