@@ -136,7 +136,7 @@ export default function CakeHeartAnimation({ scaleMultiplier = 1, started = true
       swayOffset: Math.random() * Math.PI * 2,
     }))
 
-    const DURATION = 3800 // 3.8s smooth botanical vine growth (synced with curtain)
+    const DURATION = 3800 // 3.8s smooth botanical vine growth (harmonized with stage timeline)
     let startTs = 0
     let crestBloomed = false
 
