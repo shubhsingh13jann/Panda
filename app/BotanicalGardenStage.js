@@ -18,8 +18,10 @@ import EcologyModal from './botanical/EcologyModal'
 export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   const [isPortraitMobile, setIsPortraitMobile] = useState(false)
   const [orientationDismissed, setOrientationDismissed] = useState(false)
+  const [viewBox, setViewBox] = useState('0 0 1600 900')
+  const viewBoxRef = useRef({ minX: 0, minY: 0, width: 1600, height: 900 })
 
-  // ── CELESTIAL FREE 2D POSITIONS IN 1600x900 MASTER CANVAS ──
+  // ── CELESTIAL FREE 2D POSITIONS IN MASTER CANVAS ──
   // User can drag the Sun or Moon freely in 2D anywhere in the sky bi-directionally!
   const [sunPos, setSunPos] = useState({ x: 380, y: 145 })
   const [moonPos, setMoonPos] = useState({ x: 380, y: 155 })
@@ -106,20 +108,60 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
   }, [])
 
   useEffect(() => {
-    const evaluateOrientation = () => {
-      const isMobile = window.innerWidth < 850
-      const isPortrait = window.innerHeight > window.innerWidth
+    const updateDimensions = () => {
+      if (typeof window === 'undefined') return
+      const w = window.innerWidth || sw || 1600
+      const h = window.innerHeight || sh || 900
+      const isMobile = w < 850
+      const isPortrait = h > w
       setIsPortraitMobile(isMobile && isPortrait)
+
+      const ar = w / Math.max(1, h)
+      const baseW = 1600
+      const baseH = 900
+      const targetAr = baseW / baseH // ~1.7778
+
+      let minX = 0
+      let minY = 0
+      let vbWidth = baseW
+      let vbHeight = baseH
+
+      if (isMobile && isPortrait) {
+        // Mobile portrait: keep 1600x900 meet view so billboard and valley remain clean
+        minX = 0
+        minY = 0
+        vbWidth = baseW
+        vbHeight = baseH
+      } else if (ar >= targetAr) {
+        // Landscape & ultra-wide screens (e.g. 16:9, 16:10, 20:9, 21:9):
+        // Keep vertical height fixed at 900 so top sky and bottom meadow are NEVER sliced!
+        // Expand horizontal width to match the exact aspect ratio of the device.
+        vbHeight = baseH
+        vbWidth = Math.round(baseH * ar)
+        minX = Math.round((baseW - vbWidth) / 2)
+        minY = 0
+      } else {
+        // Screens narrower than 16:9 (e.g. iPad 4:3, 3:2 tablets):
+        // Keep width fixed at 1600 so entire valley (tree, bridge, deer) is visible.
+        // Expand vertical height slightly with minY centered.
+        vbWidth = baseW
+        vbHeight = Math.round(baseW / ar)
+        minX = 0
+        minY = Math.round((baseH - vbHeight) / 2)
+      }
+
+      viewBoxRef.current = { minX, minY, width: vbWidth, height: vbHeight }
+      setViewBox(`${minX} ${minY} ${vbWidth} ${vbHeight}`)
     }
 
-    evaluateOrientation()
-    window.addEventListener('resize', evaluateOrientation)
-    window.addEventListener('orientationchange', evaluateOrientation)
+    updateDimensions()
+    window.addEventListener('resize', updateDimensions)
+    window.addEventListener('orientationchange', updateDimensions)
     return () => {
-      window.removeEventListener('resize', evaluateOrientation)
-      window.removeEventListener('orientationchange', evaluateOrientation)
+      window.removeEventListener('resize', updateDimensions)
+      window.removeEventListener('orientationchange', updateDimensions)
     }
-  }, [])
+  }, [sw, sh])
 
   // ── CONTINUOUS TICK FOR WATER RIPPLES, WINGS & WILDLIFE ──
   useEffect(() => {
@@ -255,19 +297,20 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       }
     } catch (_) {}
 
-    // Robust mathematical fallback for preserveAspectRatio
+    // Robust mathematical fallback using active viewBox
     const rect = svgRef.current.getBoundingClientRect()
-    const w = rect.width || (typeof window !== 'undefined' ? window.innerWidth : 1600)
-    const h = rect.height || (typeof window !== 'undefined' ? window.innerHeight : 900)
+    const vb = viewBoxRef.current || { minX: 0, minY: 0, width: 1600, height: 900 }
+    const w = rect.width || (typeof window !== 'undefined' ? window.innerWidth : vb.width)
+    const h = rect.height || (typeof window !== 'undefined' ? window.innerHeight : vb.height)
     const isPortrait = isPortraitMobileRef.current
-    const scale = isPortrait ? Math.min(w / 1600, h / 900) : Math.max(w / 1600, h / 900)
-    const offsetX = (w - 1600 * scale) / 2
-    const offsetY = (h - 900 * scale) / 2
+    const scale = isPortrait ? Math.min(w / vb.width, h / vb.height) : Math.max(w / vb.width, h / vb.height)
+    const offsetX = (w - vb.width * scale) / 2
+    const offsetY = (h - vb.height * scale) / 2
     const relX = clientX - rect.left
     const relY = clientY - rect.top
     return {
-      x: (relX - offsetX) / scale,
-      y: (relY - offsetY) / scale,
+      x: vb.minX + (relX - offsetX) / scale,
+      y: vb.minY + (relY - offsetY) / scale,
     }
   }, [])
 
@@ -325,8 +368,11 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       if (e?.stopPropagation) e.stopPropagation()
       const target = draggingRef.current
       const pt = getSvgPoint(clientX, clientY)
+      const vb = viewBoxRef.current || { minX: 0, minY: 0, width: 1600, height: 900 }
+      const minYLimit = Math.max(20, vb.minY + 20)
+      const maxYLimit = Math.min(560, vb.minY + vb.height * 0.62)
       const rawX = pt.x - dragOffsetRef.current.dx
-      const newY = Math.max(20, Math.min(560, pt.y - dragOffsetRef.current.dy))
+      const newY = Math.max(minYLimit, Math.min(maxYLimit, pt.y - dragOffsetRef.current.dy))
       const safeX = Number.isFinite(rawX) ? rawX : 380
       const safeY = Number.isFinite(newY) ? newY : 150
 
@@ -347,10 +393,11 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
         topTouchTargetRef.current.setAttribute('cy', safeY)
       }
 
-      // Only transition when reaching actual valley scene edges (safeX >= 1520 or safeX <= 80)
-      // Removing clientX bezel triggers completely prevents accidental drag drops on mobile!
-      const isOffRightScene = safeX >= 1520
-      const isOffLeftScene = safeX <= 80
+      // Transition when reaching actual valley scene edges according to active responsive viewBox
+      const leftBoundary = vb.minX + 80
+      const rightBoundary = vb.minX + vb.width - 80
+      const isOffRightScene = safeX >= rightBoundary
+      const isOffLeftScene = safeX <= leftBoundary
 
       if (target === 'sun') {
         // Forward: Dragging Sun off right screen (Sunset -> Nightfall)
@@ -521,7 +568,8 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
         position: 'fixed',
         inset: 0,
         width: '100vw',
-        height: '100vh',
+        height: '100dvh',
+        maxHeight: '100dvh',
         zIndex: 50,
         overflow: 'hidden',
         userSelect: 'none',
@@ -544,7 +592,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
             transition={{ duration: 0.35, ease: 'easeOut' }}
             style={{
               position: 'absolute',
-              top: 'clamp(6px, 1.4vh, 14px)',
+              top: 'max(6px, env(safe-area-inset-top, 6px))',
               left: '50%',
               transform: 'translateX(-50%)',
               zIndex: 40,
@@ -560,7 +608,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
                 WebkitBackdropFilter: 'blur(12px)',
                 border: '1px solid rgba(255, 255, 255, 0.18)',
                 borderRadius: '9999px',
-                padding: 'clamp(4px, 0.9vh, 7px) clamp(14px, 2vw, 20px)',
+                padding: 'clamp(4px, 0.8dvh, 6px) clamp(12px, 2vw, 18px)',
                 boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
                 display: 'flex',
                 flexDirection: 'column',
@@ -571,7 +619,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
               <div
                 style={{
                   color: '#ffffff',
-                  fontSize: 'clamp(0.82rem, 1.8vw, 0.94rem)',
+                  fontSize: 'clamp(0.78rem, 1.6vw, 0.90rem)',
                   fontWeight: 600,
                   fontFamily: 'system-ui, -apple-system, sans-serif',
                   letterSpacing: '0.2px',
@@ -590,9 +638,9 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
               <div
                 style={{
                   color: '#94a3b8',
-                  fontSize: 'clamp(0.64rem, 1.3vw, 0.72rem)',
+                  fontSize: 'clamp(0.60rem, 1.2vw, 0.70rem)',
                   fontWeight: 700,
-                  letterSpacing: '1.4px',
+                  letterSpacing: '1.2px',
                   textTransform: 'uppercase',
                 }}
               >
@@ -614,11 +662,11 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
         aria-label="Toggle valley guide"
         style={{
           position: 'absolute',
-          top: 'clamp(8px, 1.6vh, 16px)',
-          right: 'clamp(12px, 2vw, 20px)',
+          top: 'max(8px, env(safe-area-inset-top, 8px))',
+          right: 'max(12px, env(safe-area-inset-right, 12px))',
           zIndex: 60,
-          width: 'clamp(34px, 4.2vw, 40px)',
-          height: 'clamp(34px, 4.2vw, 40px)',
+          width: 'clamp(32px, 4vw, 38px)',
+          height: 'clamp(32px, 4vw, 38px)',
           borderRadius: '50%',
           background: showInfoBanner
             ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%)'
@@ -635,7 +683,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
           justifyContent: 'center',
           cursor: 'pointer',
           fontFamily: 'Georgia, Cambria, serif',
-          fontSize: 'clamp(1rem, 2vw, 1.15rem)',
+          fontSize: 'clamp(0.95rem, 1.8vw, 1.10rem)',
           fontWeight: 800,
           fontStyle: 'italic',
           padding: 0,
@@ -677,12 +725,12 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       )}
 
       {/* ══════════════════════════════════════════════════════════════
-          MASTER BOTANICAL SVG CANVAS (1600x900 NATIVE DESIGN SPACE)
+          MASTER BOTANICAL SVG CANVAS (RESPONSIVE VIEWBOX FOR ALL SCREENS)
       ══════════════════════════════════════════════════════════════ */}
       <svg
         ref={svgRef}
-        viewBox="0 0 1600 900"
-        preserveAspectRatio={isPortraitMobile ? 'xMidYMid meet' : 'xMidYMid slice'}
+        viewBox={viewBox}
+        preserveAspectRatio="xMidYMid meet"
         style={{
           position: 'absolute',
           inset: 0,
@@ -809,12 +857,13 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
       <div
         style={{
           position: 'absolute',
-          bottom: 'clamp(14px, 2.8vh, 24px)',
+          bottom: 'max(10px, env(safe-area-inset-bottom, 10px))',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 40,
           pointerEvents: 'auto',
           textAlign: 'center',
+          maxWidth: '94vw',
         }}
       >
         <motion.button
@@ -833,10 +882,10 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
             background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)',
             border: '1.5px solid rgba(254, 240, 138, 0.7)',
             borderRadius: '9999px',
-            padding: '8px 24px',
+            padding: 'clamp(6px, 1.2dvh, 8px) clamp(16px, 3vw, 24px)',
             color: '#fef3c7',
             fontFamily: 'system-ui, -apple-system, sans-serif',
-            fontSize: 'clamp(0.85rem, 1.8vw, 0.94rem)',
+            fontSize: 'clamp(0.80rem, 1.6vw, 0.92rem)',
             fontWeight: 700,
             letterSpacing: '0.4px',
             cursor: 'pointer',
@@ -844,6 +893,7 @@ export default function BotanicalGardenStage({ sw, sh, onComplete }) {
             alignItems: 'center',
             gap: '8px',
             boxShadow: '0 4px 18px rgba(217, 119, 6, 0.45)',
+            whiteSpace: 'nowrap',
           }}
         >
           <span style={{ fontSize: '15px' }}>🪷</span>
