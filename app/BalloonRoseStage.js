@@ -7,6 +7,7 @@ import {
   PandaPuzzleTile,
   PUZZLE_TILES_CONFIG,
 } from './PandaPuzzleArtwork'
+import BotanicalGardenStage from './BotanicalGardenStage'
 
 /* ══════════════════════════════════════════════
    CONSTANTS & DATA (CONCEPT 2: HOT-AIR BASKET)
@@ -1056,95 +1057,7 @@ function PandaPuzzleGame({ onSolved }) {
 }
 
 /* ══════════════════════════════════════════════
-   4. BLOOMING LOTUS FLOWER
-══════════════════════════════════════════════ */
-
-function Lotus({ cx, cy, scale = 1, onComplete }) {
-  useEffect(() => {
-    const timer = setTimeout(() => onComplete?.(), 4800)
-    return () => clearTimeout(timer)
-  }, [onComplete])
-
-  const layers = [
-    { key: 'outer', count: 8, scale: 1.25, grad: 'lotusOuter', delay: 1.2 },
-    { key: 'mid', count: 7, scale: 0.95, grad: 'lotusMid', delay: 0.9 },
-    { key: 'inner', count: 6, scale: 0.65, grad: 'lotusInner', delay: 0.6 },
-    { key: 'core', count: 5, scale: 0.42, grad: 'lotusCore', delay: 0.35 },
-  ]
-
-  const petalPath = (px, py) => `
-    M ${px} ${py}
-    C ${px - 26} ${py - 12}, ${px - 42} ${py - 42}, ${px - 32} ${py - 72}
-    C ${px - 24} ${py - 90}, ${px - 10} ${py - 99}, ${px} ${py - 96}
-    C ${px + 10} ${py - 99}, ${px + 24} ${py - 90}, ${px + 32} ${py - 72}
-    C ${px + 42} ${py - 42}, ${px + 26} ${py - 12}, ${px} ${py} Z
-  `
-
-  return (
-    <g transform={`translate(${cx},${cy}) scale(${scale}) translate(${-cx},${-cy})`}>
-      <defs>
-        <linearGradient id="lotusOuter" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fbcfe8" />
-          <stop offset="50%" stopColor="#f472b6" />
-          <stop offset="100%" stopColor="#059669" />
-        </linearGradient>
-        <linearGradient id="lotusMid" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fdf2f8" />
-          <stop offset="50%" stopColor="#f472b6" />
-          <stop offset="100%" stopColor="#10b981" />
-        </linearGradient>
-        <linearGradient id="lotusInner" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="60%" stopColor="#f9a8d4" />
-          <stop offset="100%" stopColor="#059669" />
-        </linearGradient>
-        <linearGradient id="lotusCore" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fef08a" />
-          <stop offset="70%" stopColor="#fbbf24" />
-          <stop offset="100%" stopColor="#d97706" />
-        </linearGradient>
-      </defs>
-
-      {layers.map((layer) => (
-        <g key={layer.key}>
-          {Array.from({ length: layer.count }).map((_, i) => {
-            const angle = (i / layer.count) * 360
-            return (
-              <motion.path
-                key={i}
-                d={petalPath(cx, cy)}
-                fill={`url(#${layer.grad})`}
-                opacity={0.92}
-                initial={{ scale: 0, rotate: angle }}
-                animate={{ scale: layer.scale, rotate: angle }}
-                transition={{
-                  duration: 2.2,
-                  delay: layer.delay,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                style={{ transformOrigin: `${cx}px ${cy}px` }}
-              />
-            )
-          })}
-        </g>
-      ))}
-
-      {/* Golden Glowing Stamen */}
-      <motion.circle
-        cx={cx}
-        cy={cy}
-        r={22}
-        fill="url(#lotusCore)"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 1.5, delay: 1.8 }}
-      />
-    </g>
-  )
-}
-
-/* ══════════════════════════════════════════════
-   5. MAIN STAGE ORCHESTRATOR (CONCEPT 2)
+   4. MAIN STAGE ORCHESTRATOR
 ══════════════════════════════════════════════ */
 
 export default function BalloonRoseStage({ onComplete }) {
@@ -1176,8 +1089,6 @@ export default function BalloonRoseStage({ onComplete }) {
   const handlePop = (id) => {
     setPoppedIds((prev) => new Set([...prev, id]))
   }
-
-  const roseScale = Math.min(sw / 460, sh / 460, 1.4)
 
   return (
     <section
@@ -1307,21 +1218,18 @@ export default function BalloonRoseStage({ onComplete }) {
               display: 'inline-block',
             }}
           >
-            🌸 Tap to Bloom Lotus 🌸
+            🌸 Enter the Enchanted Botanical Garden 🌿
           </motion.div>
         </motion.div>
       )}
 
-      {/* ── STAGE 4: LOTUS BLOOM ── */}
+      {/* ── STAGE 4: ENCHANTED BOTANICAL SUNRISE GARDEN & LAKE ── */}
       {stage === 'lotus' && (
-        <svg
-          width="100%"
-          height="100%"
-          style={{ width: '100%', height: '100%', display: 'block' }}
-          viewBox={`0 0 ${sw} ${sh}`}
-        >
-          <Lotus cx={sw / 2} cy={sh / 2} scale={roseScale} onComplete={onComplete} />
-        </svg>
+        <BotanicalGardenStage
+          sw={sw}
+          sh={sh}
+          onComplete={onComplete}
+        />
       )}
 
       {/* ── BOTTOM BANNER MESSAGE (BELOW BASKET AREA) ── */}
