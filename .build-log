@@ -8,3 +8,4 @@
 [2026-12-05T11:15:00] feat(svg): craft modular vector panda mascot svg component
 [2026-12-05T18:00:00] feat(svg): craft bamboo stalks and floral lotus svg assets
 [2026-12-06T10:30:00] feat(stage-machine): scaffold main stage state controller in page.tsx
+[2026-12-06T17:45:00] test(stage-machine): add debug controls and stage switching shortcuts
