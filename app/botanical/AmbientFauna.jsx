@@ -367,6 +367,5 @@ function AmbientFauna({ simTick, isNight, sunsetFactor, nightFactor }) {
   )
 }
 
-// AmbientFauna base
 export default React.memo(AmbientFauna)
 export { DriftingClouds, FlyingBirds }
