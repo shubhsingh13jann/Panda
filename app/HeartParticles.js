@@ -31,7 +31,7 @@ export default function HeartParticles({ style = {} }) {
     let height = 0
     let cx = 0
     let cy = 0
-    let scale = 1
+    let baseScale = 1
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -45,21 +45,24 @@ export default function HeartParticles({ style = {} }) {
 
       cx = width / 2
       cy = height / 2 - 10
-      scale = Math.min((width * 0.88) / 34, (height * 0.72) / 34)
+      baseScale = Math.min((width * 0.88) / 34, (height * 0.72) / 34)
     }
 
     resize()
     window.addEventListener('resize', resize)
 
     const sparks = []
+    const shockwaves = []
     const startTs = performance.now()
     const TRACE_DURATION = 1800
+    let tipShockwaveTriggered = false
+    let lastBeatPulse = false
 
     const PALETTE = [
-      { r: 16, g: 185, b: 129 },
-      { r: 52, g: 211, b: 153 },
-      { r: 251, g: 191, b: 36 },
-      { r: 255, g: 255, b: 255 },
+      { r: 16, g: 185, b: 129 },  // emerald #10b981
+      { r: 52, g: 211, b: 153 },  // mint #34d399
+      { r: 251, g: 191, b: 36 },  // gold #fbbf24
+      { r: 255, g: 255, b: 255 }, // pure white
     ]
 
     const spawnSpark = (x, y, vx, vy, color, size = 2) => {
@@ -75,54 +78,145 @@ export default function HeartParticles({ style = {} }) {
       })
     }
 
+    const spawnShockwave = (x, y, maxRadius = 120, color = 'rgba(52, 211, 153, 0.7)') => {
+      shockwaves.push({
+        x,
+        y,
+        radius: 4,
+        maxRadius,
+        growth: 3.5,
+        opacity: 0.85,
+        decay: 0.025,
+        color,
+      })
+    }
+
+    const drawHeartRibbon = (currentScale, traceProgress, alpha = 1) => {
+      const steps = 80
+      const count = Math.floor(steps * traceProgress)
+      if (count < 2) return
+
+      const passes = [
+        { width: 14, color: `rgba(16, 185, 129, ${0.22 * alpha})`, blur: 16 },
+        { width: 6,  color: `rgba(52, 211, 153, ${0.65 * alpha})`, blur: 8 },
+        { width: 2.2, color: `rgba(255, 255, 255, ${0.92 * alpha})`, blur: 0 },
+      ]
+
+      passes.forEach((pass) => {
+        ctx.save()
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+        ctx.lineWidth = pass.width
+        ctx.strokeStyle = pass.color
+        if (pass.blur > 0) {
+          ctx.shadowColor = 'rgba(52, 211, 153, 0.8)'
+          ctx.shadowBlur = pass.blur
+        }
+
+        // Right lobe
+        ctx.beginPath()
+        for (let s = 0; s <= count; s++) {
+          const t = Math.PI - (s / steps) * Math.PI
+          const pt = getHeartPoint(t, cx, cy, currentScale)
+          if (s === 0) ctx.moveTo(pt.x, pt.y)
+          else ctx.lineTo(pt.x, pt.y)
+        }
+        ctx.stroke()
+
+        // Left lobe
+        ctx.beginPath()
+        for (let s = 0; s <= count; s++) {
+          const t = Math.PI + (s / steps) * Math.PI
+          const pt = getHeartPoint(t, cx, cy, currentScale)
+          if (s === 0) ctx.moveTo(pt.x, pt.y)
+          else ctx.lineTo(pt.x, pt.y)
+        }
+        ctx.stroke()
+        ctx.restore()
+      })
+    }
+
     const render = (now) => {
       if (!running) return
 
       const elapsed = now - startTs
       const traceProgress = Math.min(elapsed / TRACE_DURATION, 1)
 
+      // Double-pulse heartbeat rhythm
+      let heartbeatScale = 1
+      if (traceProgress >= 1) {
+        const cycle = ((elapsed - TRACE_DURATION) / 1300) % 1
+        let beat = 0
+        if (cycle < 0.14) {
+          beat = Math.sin((cycle / 0.14) * Math.PI) * 0.038
+        } else if (cycle >= 0.22 && cycle < 0.40) {
+          beat = Math.sin(((cycle - 0.22) / 0.18) * Math.PI) * 0.055
+        }
+        heartbeatScale = 1 + beat
+
+        // Trigger subtle wave on big contraction peak
+        const isPeaking = beat > 0.048
+        if (isPeaking && !lastBeatPulse) {
+          const tip = getHeartPoint(0, cx, cy, baseScale * heartbeatScale)
+          spawnShockwave(tip.x, tip.y, 90, 'rgba(251, 191, 36, 0.65)')
+        }
+        lastBeatPulse = isPeaking
+      }
+
+      const currentScale = baseScale * heartbeatScale
       ctx.clearRect(0, 0, width, height)
 
-      const tRight = Math.PI - traceProgress * Math.PI
-      const tLeft = Math.PI + traceProgress * Math.PI
-
+      // Dual-comet trailing sparks during trace
       if (traceProgress < 1) {
-        const pt1 = getHeartPoint(tRight, cx, cy, scale)
-        const pt2 = getHeartPoint(tLeft, cx, cy, scale)
+        const tRight = Math.PI - traceProgress * Math.PI
+        const tLeft = Math.PI + traceProgress * Math.PI
+        const pt1 = getHeartPoint(tRight, cx, cy, currentScale)
+        const pt2 = getHeartPoint(tLeft, cx, cy, currentScale)
 
-        for (let k = 0; k < 4; k++) {
-          spawnSpark(pt1.x, pt1.y, (Math.random() - 0.5) * 1, -1, PALETTE[1], 3)
-          spawnSpark(pt2.x, pt2.y, (Math.random() - 0.5) * 1, -1, PALETTE[2], 3)
+        for (let k = 0; k < 3; k++) {
+          spawnSpark(pt1.x, pt1.y, (Math.random() - 0.5) * 1.5, -0.8, PALETTE[1], 2.8)
+          spawnSpark(pt2.x, pt2.y, (Math.random() - 0.5) * 1.5, -0.8, PALETTE[2], 2.8)
+          spawnSpark(pt1.x, pt1.y, (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, PALETTE[3], 1.8)
         }
+      } else if (!tipShockwaveTriggered) {
+        // Shockwave when comets merge at the bottom tip
+        const tip = getHeartPoint(0, cx, cy, currentScale)
+        spawnShockwave(tip.x, tip.y, 160, 'rgba(52, 211, 153, 0.85)')
+        spawnShockwave(tip.x, tip.y, 220, 'rgba(251, 191, 36, 0.7)')
+        for (let k = 0; k < 25; k++) {
+          const angle = Math.random() * Math.PI * 2
+          const speed = Math.random() * 3 + 1
+          spawnSpark(tip.x, tip.y, Math.cos(angle) * speed, Math.sin(angle) * speed, PALETTE[k % PALETTE.length], 3)
+        }
+        tipShockwaveTriggered = true
       }
 
-      ctx.save()
-      ctx.lineCap = 'round'
-      ctx.lineJoin = 'round'
-      ctx.lineWidth = 3
-      ctx.strokeStyle = 'rgba(52, 211, 153, 0.85)'
+      // Draw multi-pass heart ribbon
+      drawHeartRibbon(currentScale, traceProgress)
 
-      ctx.beginPath()
-      const stepsRight = Math.floor(60 * traceProgress)
-      for (let s = 0; s <= stepsRight; s++) {
-        const t = Math.PI - (s / 60) * Math.PI
-        const pt = getHeartPoint(t, cx, cy, scale)
-        if (s === 0) ctx.moveTo(pt.x, pt.y)
-        else ctx.lineTo(pt.x, pt.y)
+      // Shockwave rings
+      for (let i = shockwaves.length - 1; i >= 0; i--) {
+        const sw = shockwaves[i]
+        sw.radius += sw.growth
+        sw.opacity -= sw.decay
+
+        if (sw.opacity <= 0 || sw.radius >= sw.maxRadius) {
+          shockwaves.splice(i, 1)
+          continue
+        }
+
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2)
+        ctx.strokeStyle = sw.color.replace(/[\d\.]+\)$/, `${Math.max(0, sw.opacity)})`)
+        ctx.lineWidth = 2.4
+        ctx.shadowColor = sw.color
+        ctx.shadowBlur = 10
+        ctx.stroke()
+        ctx.restore()
       }
-      ctx.stroke()
 
-      ctx.beginPath()
-      const stepsLeft = Math.floor(60 * traceProgress)
-      for (let s = 0; s <= stepsLeft; s++) {
-        const t = Math.PI + (s / 60) * Math.PI
-        const pt = getHeartPoint(t, cx, cy, scale)
-        if (s === 0) ctx.moveTo(pt.x, pt.y)
-        else ctx.lineTo(pt.x, pt.y)
-      }
-      ctx.stroke()
-      ctx.restore()
-
+      // Render sparks
       for (let i = sparks.length - 1; i >= 0; i--) {
         const p = sparks[i]
         p.x += p.vx
@@ -138,6 +232,8 @@ export default function HeartParticles({ style = {} }) {
 
         ctx.save()
         ctx.fillStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.life})`
+        ctx.shadowColor = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, 0.8)`
+        ctx.shadowBlur = 4
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2)
         ctx.fill()
