@@ -28,3 +28,4 @@
 [2026-12-15T10:30:00] feat(stage-2): construct realistic candle flame and radial illumination glow
 [2026-12-15T18:15:00] feat(stage-2): implement interactive candle blowing click event
 [2026-12-16T11:00:00] feat(stage-2): animate smoke wisps and wish granted celebration banner
+[2026-12-16T17:45:00] feat(stage-2): link candle blow completion to balloon stage transition
