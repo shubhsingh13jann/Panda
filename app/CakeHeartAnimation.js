@@ -13,26 +13,6 @@ const heartPoint = (t) => {
   return { x, y }
 }
 
-const colorAt = (t) => {
-  const { x } = heartPoint(t)
-
-  if (x >= 0) {
-    const k = Math.sin(t)
-    return {
-      r: Math.round(16 + 80 * k),
-      g: Math.round(185 + 40 * (1 - k)),
-      b: Math.round(129 + 60 * (1 - k)),
-    }
-  }
-
-  const k = -Math.sin(t)
-  return {
-    r: Math.round(250 + 5 * (1 - k)),
-    g: Math.round(180 + 30 * (1 - k)),
-    b: Math.round(30 + 70 * k),
-  }
-}
-
 const HEART_BOUNDS = (() => {
   let minX = Infinity
   let maxX = -Infinity
@@ -59,7 +39,39 @@ const HEART_BOUNDS = (() => {
 
 const OVERFLOW = 180
 
-export default function CakeHeartAnimation({ scaleMultiplier = 0.42, style = {} }) {
+// Generate 16 Botanical Nodes along the Heart (alternating Sakura Blossoms & Bamboo Shoots)
+const BOTANICAL_NODES_CONFIG = (() => {
+  const list = []
+  // 8 nodes on the right lobe (ascending from t = PI towards t = 0)
+  for (let i = 0; i < 8; i++) {
+    const frac = (i + 1) / 9
+    const t = Math.PI - frac * Math.PI
+    list.push({
+      id: i,
+      t,
+      isRight: true,
+      isSakura: i % 2 === 0,
+      size: i % 2 === 0 ? 11 : 14,
+      baseAngle: (Math.PI / 4) + (i * 0.15),
+    })
+  }
+  // 8 nodes on the left lobe (ascending from t = PI towards t = 2*PI)
+  for (let i = 0; i < 8; i++) {
+    const frac = (i + 1) / 9
+    const t = Math.PI + frac * Math.PI
+    list.push({
+      id: i + 8,
+      t,
+      isRight: false,
+      isSakura: i % 2 === 0,
+      size: i % 2 === 0 ? 11 : 14,
+      baseAngle: -(Math.PI / 4) - (i * 0.15),
+    })
+  }
+  return list
+})()
+
+export default function CakeHeartAnimation({ scaleMultiplier = 1, started = true, style = {} }) {
   const canvasRef = useRef(null)
 
   useEffect(() => {
@@ -75,6 +87,8 @@ export default function CakeHeartAnimation({ scaleMultiplier = 0.42, style = {} 
     let cx = 0
     let cy = 0
     let scale = 1
+    let stageW = 0
+    let stageH = 0
 
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, 2)
@@ -87,221 +101,529 @@ export default function CakeHeartAnimation({ scaleMultiplier = 0.42, style = {} 
       canvas.style.height = `${height}px`
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
 
-      const stageW = Math.max(1, width - OVERFLOW * 2)
-      const stageH = Math.max(1, height - OVERFLOW * 2)
+      stageW = Math.max(1, width - OVERFLOW * 2)
+      stageH = Math.max(1, height - OVERFLOW * 2)
+
+      const maxHeartHeight = stageH * 0.84
+      const maxHeartWidth = Math.min(stageW * 0.90, 720)
 
       scale = Math.min(
-        (stageW * 0.90) / HEART_BOUNDS.width,
-        (stageH * 1.00) / HEART_BOUNDS.height
-      ) * scaleMultiplier
+        maxHeartWidth / HEART_BOUNDS.width,
+        maxHeartHeight / HEART_BOUNDS.height
+      ) * (scaleMultiplier || 1)
 
       cx = width / 2 - ((HEART_BOUNDS.minX + HEART_BOUNDS.maxX) / 2) * scale
-      cy = OVERFLOW + stageH * 0.54 - ((HEART_BOUNDS.minY + HEART_BOUNDS.maxY) / 2) * scale
+      cy = OVERFLOW + stageH * 0.50 - ((HEART_BOUNDS.minY + HEART_BOUNDS.maxY) / 2) * scale
     }
 
     resize()
     window.addEventListener('resize', resize)
 
-    const trail = []
-    const spray = []
-    const pandas = []
+    // Palette: Gold Filigree, Cherry Blossom Pink & Jade Bamboo
+    const GOLD = { r: 251, g: 191, b: 36 }
+    const AMBER = { r: 217, g: 119, b: 6 }
+    const JADE = { r: 16, g: 185, b: 129 }
+    const MINT = { r: 110, g: 231, b: 183 }
+    const SAKURA_PINK = { r: 244, g: 114, b: 182 }
+    const SAKURA_LIGHT = { r: 253, g: 226, b: 236 }
 
-    const DURATION = 9500
-    const startTs = performance.now()
-    let lastPandaAt = 0
-    let prevHx = null
-    let prevHy = null
+    // Initialize Botanical Nodes
+    const botanicalNodes = BOTANICAL_NODES_CONFIG.map((cfg) => ({
+      ...cfg,
+      bloom: 0,
+      targetBloom: 0,
+      flare: 0,
+      swayOffset: Math.random() * Math.PI * 2,
+    }))
 
-    const spawnSpray = (hx, hy, t, dirX, dirY) => {
-      const c = colorAt(t)
-      const hp = heartPoint(t)
-      const outward = hp.x >= 0 ? 1 : -1
-      const perpX = -dirY
-      const perpY = dirX
+    const DURATION = 3800 // 3.8s smooth botanical vine growth (synced with curtain)
+    let startTs = 0
+    let crestBloomed = false
 
-      for (let i = 0; i < 8; i++) {
-        const push = Math.random() * 1.8 + 0.3
-        const jitter = (Math.random() - 0.5) * 0.8
-        const vx = perpX * outward * push * 0.7 + dirX * jitter + (Math.random() - 0.5) * 0.2
-        const vy = perpY * outward * push * 0.7 + dirY * jitter - Math.random() * 0.25
+    const vinePollen = []
+    const fallingPetals = []
+    const shockwaveRings = []
 
-        spray.push({
-          x: hx,
-          y: hy,
-          vx,
-          vy,
-          size: Math.random() * 1.4 + 0.4,
-          r: c.r,
-          g: c.g,
-          b: c.b,
-          life: 1,
-          decay: 0.006 + Math.random() * 0.012,
-        })
+    // Helper: Draw Procedural 5-Petal Sakura Blossom
+    const drawSakuraFlower = (x, y, size, bloomProgress, rotation = 0) => {
+      if (bloomProgress <= 0.02) return
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(rotation)
+      const s = size * Math.min(bloomProgress, 1)
+
+      // 5 Soft Petals
+      for (let i = 0; i < 5; i++) {
+        const angle = (i * Math.PI * 2) / 5
+        ctx.save()
+        ctx.rotate(angle)
+
+        const grad = ctx.createRadialGradient(0, -s * 0.5, 0, 0, -s * 0.5, s * 0.9)
+        grad.addColorStop(0, '#fde2ec')
+        grad.addColorStop(0.55, '#f472b6')
+        grad.addColorStop(1, '#ec4899')
+
+        ctx.fillStyle = grad
+        ctx.beginPath()
+        ctx.moveTo(0, 0)
+        ctx.bezierCurveTo(-s * 0.42, -s * 0.45, -s * 0.42, -s * 0.95, 0, -s)
+        ctx.bezierCurveTo(s * 0.42, -s * 0.95, s * 0.42, -s * 0.45, 0, 0)
+        ctx.fill()
+        ctx.restore()
       }
 
-      if (Math.random() < 0.3) {
-        spray.push({
-          x: hx + (Math.random() - 0.5) * 80,
-          y: hy + (Math.random() - 0.5) * 80,
-          vx: (Math.random() - 0.5) * 0.15,
-          vy: (Math.random() - 0.5) * 0.15,
-          size: Math.random() * 2.4 + 1.2,
-          r: c.r,
-          g: c.g,
-          b: c.b,
-          life: 1,
-          decay: 0.004,
-          bokeh: true,
-        })
-      }
+      // Golden Stamen Center
+      ctx.fillStyle = '#fbbf24'
+      ctx.beginPath()
+      ctx.arc(0, 0, s * 0.24, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.fillStyle = '#ffffff'
+      ctx.beginPath()
+      ctx.arc(0, 0, s * 0.12, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.restore()
     }
 
-    const spawnPanda = (hx, hy) => {
-      pandas.push({
-        x: hx + (Math.random() - 0.5) * 8,
-        y: hy + (Math.random() - 0.5) * 8,
-        life: 1,
-        decay: 0.025,
-        size: 20 + Math.random() * 10,
-        emoji: Math.random() > 0.3 ? '🐼' : '🎋',
+    // Helper: Draw Elegant 3-Leaf Bamboo Shoot Cluster
+    const drawBambooCluster = (x, y, size, bloomProgress, rotation = 0) => {
+      if (bloomProgress <= 0.02) return
+      ctx.save()
+      ctx.translate(x, y)
+      ctx.rotate(rotation)
+      const s = size * Math.min(bloomProgress, 1)
+
+      const leafAngles = [-0.38, 0.05, 0.48]
+      const leafLens = [s * 0.85, s * 1.15, s * 0.92]
+
+      leafAngles.forEach((a, idx) => {
+        ctx.save()
+        ctx.rotate(a)
+        const len = leafLens[idx]
+        const w = len * 0.24
+
+        const grad = ctx.createLinearGradient(0, 0, 0, -len)
+        grad.addColorStop(0, '#047857')
+        grad.addColorStop(0.5, '#10b981')
+        grad.addColorStop(1, '#a7f3d0')
+
+        ctx.fillStyle = grad
+        ctx.beginPath()
+        ctx.moveTo(0, 0)
+        ctx.quadraticCurveTo(-w, -len * 0.48, 0, -len)
+        ctx.quadraticCurveTo(w, -len * 0.48, 0, 0)
+        ctx.fill()
+        ctx.restore()
       })
-    }
 
-    const drawSprayParticle = (particle) => {
-      const alpha = Math.max(0, particle.life)
-      const haloRadius = particle.size * (particle.bokeh ? 4.5 : 2.8)
-      const grad = ctx.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, haloRadius)
-      grad.addColorStop(0, `rgba(${particle.r},${particle.g},${particle.b},${alpha * 0.55})`)
-      grad.addColorStop(1, `rgba(${particle.r},${particle.g},${particle.b},0)`)
-
-      ctx.fillStyle = grad
+      // Bamboo joint ring
+      ctx.fillStyle = '#fbbf24'
       ctx.beginPath()
-      ctx.arc(particle.x, particle.y, haloRadius, 0, Math.PI * 2)
+      ctx.arc(0, 0, s * 0.16, 0, Math.PI * 2)
       ctx.fill()
 
-      ctx.fillStyle = `rgba(${particle.r},${particle.g},${particle.b},${alpha})`
-      ctx.beginPath()
-      ctx.arc(particle.x, particle.y, particle.size * (particle.bokeh ? 0.9 : 0.85), 0, Math.PI * 2)
-      ctx.fill()
+      ctx.restore()
     }
 
-    const drawTrail = () => {
-      if (trail.length < 2) return
+    // Helper: Spawn gentle golden pollen around growing vine tips
+    const spawnPollen = (x, y, count = 2) => {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2
+        const speed = Math.random() * 1.4 + 0.3
+        vinePollen.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 0.3,
+          size: Math.random() * 1.8 + 0.8,
+          alpha: 1,
+          decay: 0.02 + Math.random() * 0.015,
+          color: Math.random() > 0.4 ? GOLD : SAKURA_PINK,
+        })
+      }
+    }
 
-      ctx.lineCap = 'round'
-      ctx.lineJoin = 'round'
+    // Trigger Crowning Royal Crest & Falling Petal Rain
+    const triggerRoyalCrest = (apexX, apexY) => {
+      shockwaveRings.push({
+        x: apexX,
+        y: apexY,
+        radius: 6,
+        maxRadius: 200,
+        growth: 4.5,
+        opacity: 0.85,
+        decay: 0.018,
+        color: SAKURA_PINK,
+      })
+      shockwaveRings.push({
+        x: apexX,
+        y: apexY,
+        radius: 12,
+        maxRadius: 260,
+        growth: 5.8,
+        opacity: 0.75,
+        decay: 0.014,
+        color: GOLD,
+      })
 
-      const passes = [
-        { width: 11, alpha: 0.14 },
-        { width: 6, alpha: 0.4 },
-        { width: 2.2, alpha: 1 },
-      ]
-
-      for (const pass of passes) {
-        for (let i = 1; i < trail.length; i++) {
-          const p0 = trail[i - 1]
-          const p1 = trail[i]
-          const p2 = trail[i + 1] || p1
-          const mx = (p1.x + p2.x) / 2
-          const my = (p1.y + p2.y) / 2
-
-          ctx.strokeStyle = `rgba(${p1.r},${p1.g},${p1.b},${pass.alpha})`
-          ctx.lineWidth = pass.width
-          ctx.beginPath()
-          ctx.moveTo(p0.x, p0.y)
-          ctx.quadraticCurveTo(p1.x, p1.y, mx, my)
-          ctx.stroke()
-        }
+      // Spawn 24 drifting sakura petals that gently rain across the cake stage
+      for (let i = 0; i < 24; i++) {
+        fallingPetals.push({
+          x: cx + (Math.random() - 0.5) * (stageW * 0.85),
+          y: cy - (Math.random() * (stageH * 0.4)),
+          vx: (Math.random() - 0.5) * 0.6,
+          vy: Math.random() * 0.8 + 0.5,
+          size: Math.random() * 4 + 3.5,
+          rotation: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.03,
+          swayPhase: Math.random() * Math.PI * 2,
+          swaySpeed: 0.02 + Math.random() * 0.015,
+          opacity: Math.random() * 0.4 + 0.55,
+        })
       }
     }
 
     const frame = (now) => {
       if (!running) return
 
-      const progress = Math.min((now - startTs) / DURATION, 1)
-      const t = progress * Math.PI * 2
-
-      const hp = heartPoint(t)
-      const hx = cx + hp.x * scale
-      const hy = cy + hp.y * scale
-
-      let dirX = 0
-      let dirY = 0
-      if (prevHx !== null) {
-        dirX = hx - prevHx
-        dirY = hy - prevHy
-        const distance = Math.hypot(dirX, dirY) || 1
-        dirX /= distance
-        dirY /= distance
+      if (!started) {
+        ctx.clearRect(0, 0, width, height)
+        raf = requestAnimationFrame(frame)
+        return
       }
+
+      if (startTs === 0) startTs = now
+      const elapsed = now - startTs
+      const progress = Math.min(elapsed / DURATION, 1)
+
+      // Botanical gentle breathing factor
+      let breathe = 1
+      if (progress >= 1) {
+        breathe = 1 + 0.015 * Math.sin((elapsed - DURATION) * 0.002)
+      }
+      const curScale = scale * breathe
 
       ctx.clearRect(0, 0, width, height)
 
-      ctx.globalCompositeOperation = 'lighter'
-      drawTrail()
+      // Trajectories:
+      // Right Vine: from t = PI down to t = 0
+      const tRight = Math.PI - progress * Math.PI
+      // Left Vine: from t = PI up to t = 2*PI
+      const tLeft = Math.PI + progress * Math.PI
 
-      for (let i = spray.length - 1; i >= 0; i--) {
-        const particle = spray[i]
-        particle.x += particle.vx
-        particle.y += particle.vy
-        particle.vx *= 0.985
-        particle.vy *= 0.985
-        particle.life -= particle.decay
+      const ptRight = heartPoint(tRight)
+      const ptLeft = heartPoint(tLeft)
 
-        if (particle.life <= 0) {
-          spray.splice(i, 1)
-          continue
+      const rx = cx + ptRight.x * curScale
+      const ry = cy + ptRight.y * curScale
+      const lx = cx + ptLeft.x * curScale
+      const ly = cy + ptLeft.y * curScale
+
+      // Trigger flower blooming when growing vine tip arrives
+      botanicalNodes.forEach((node) => {
+        if (node.isRight) {
+          if (node.t >= tRight) node.targetBloom = 1
+        } else {
+          if (node.t <= tLeft) node.targetBloom = 1
         }
+        // Smooth bloom interpolation
+        if (node.targetBloom > node.bloom) {
+          node.bloom = Math.min(1, node.bloom + 0.045)
+          if (node.bloom > 0.8 && node.flare === 0) {
+            node.flare = 1
+            spawnPollen(
+              cx + heartPoint(node.t).x * curScale,
+              cy + heartPoint(node.t).y * curScale,
+              4
+            )
+          }
+        }
+      })
 
-        drawSprayParticle(particle)
+      // ── 1. DRAW GROWING ENCHANTED VINES (Gold Filigree & Jade Tendril) ──
+      const STEPS = 120
+      const stepsCount = Math.floor(STEPS * progress)
+
+      if (stepsCount > 1) {
+        // Pass A: Golden Filigree Main Stem
+        ctx.save()
+        ctx.lineCap = 'round'
+        ctx.lineJoin = 'round'
+
+        // Outer warm botanical glow
+        ctx.lineWidth = 10 * breathe
+        ctx.strokeStyle = 'rgba(251, 191, 36, 0.22)'
+        ctx.shadowColor = 'rgba(217, 119, 6, 0.65)'
+        ctx.shadowBlur = 12
+
+        // Right vine outer glow
+        ctx.beginPath()
+        for (let s = 0; s <= stepsCount; s++) {
+          const t = Math.PI - (s / STEPS) * Math.PI
+          const hp = heartPoint(t)
+          const x = cx + hp.x * curScale
+          const y = cy + hp.y * curScale
+          if (s === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        // Left vine outer glow
+        ctx.beginPath()
+        for (let s = 0; s <= stepsCount; s++) {
+          const t = Math.PI + (s / STEPS) * Math.PI
+          const hp = heartPoint(t)
+          const x = cx + hp.x * curScale
+          const y = cy + hp.y * curScale
+          if (s === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        // Mid Golden Stem
+        ctx.lineWidth = 4 * breathe
+        ctx.strokeStyle = '#d97706'
+        ctx.shadowBlur = 0
+
+        ctx.beginPath()
+        for (let s = 0; s <= stepsCount; s++) {
+          const t = Math.PI - (s / STEPS) * Math.PI
+          const hp = heartPoint(t)
+          const x = cx + hp.x * curScale
+          const y = cy + hp.y * curScale
+          if (s === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        ctx.beginPath()
+        for (let s = 0; s <= stepsCount; s++) {
+          const t = Math.PI + (s / STEPS) * Math.PI
+          const hp = heartPoint(t)
+          const x = cx + hp.x * curScale
+          const y = cy + hp.y * curScale
+          if (s === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        // Core Gilded Highlight
+        ctx.lineWidth = 1.6 * breathe
+        ctx.strokeStyle = '#fef08a'
+
+        ctx.beginPath()
+        for (let s = 0; s <= stepsCount; s++) {
+          const t = Math.PI - (s / STEPS) * Math.PI
+          const hp = heartPoint(t)
+          const x = cx + hp.x * curScale
+          const y = cy + hp.y * curScale
+          if (s === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        ctx.beginPath()
+        for (let s = 0; s <= stepsCount; s++) {
+          const t = Math.PI + (s / STEPS) * Math.PI
+          const hp = heartPoint(t)
+          const x = cx + hp.x * curScale
+          const y = cy + hp.y * curScale
+          if (s === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        // Pass B: Emerald Bamboo Spiral Tendril
+        ctx.lineWidth = 2.0 * breathe
+        ctx.strokeStyle = '#10b981'
+
+        ctx.beginPath()
+        for (let s = 0; s <= stepsCount; s++) {
+          const t = Math.PI - (s / STEPS) * Math.PI
+          const hp = heartPoint(t)
+          // gentle spiral wave offset
+          const offset = Math.sin(t * 14) * 3.5
+          const x = cx + hp.x * curScale + (hp.x >= 0 ? offset : -offset)
+          const y = cy + hp.y * curScale
+          if (s === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+
+        ctx.beginPath()
+        for (let s = 0; s <= stepsCount; s++) {
+          const t = Math.PI + (s / STEPS) * Math.PI
+          const hp = heartPoint(t)
+          const offset = Math.sin(t * 14) * 3.5
+          const x = cx + hp.x * curScale + (hp.x >= 0 ? offset : -offset)
+          const y = cy + hp.y * curScale
+          if (s === 0) ctx.moveTo(x, y)
+          else ctx.lineTo(x, y)
+        }
+        ctx.stroke()
+        ctx.restore()
       }
 
+      // ── 2. GROWING VINE BUDS & POLLEN SPARKLES ──
       if (progress < 1) {
-        const color = colorAt(t)
-        trail.push({ x: hx, y: hy, r: color.r, g: color.g, b: color.b })
-        spawnSpray(hx, hy, t, dirX, dirY)
+        spawnPollen(rx, ry, 2)
+        spawnPollen(lx, ly, 2)
 
-        const head = ctx.createRadialGradient(hx, hy, 0, hx, hy, 34)
-        head.addColorStop(0, 'rgba(255,235,160,0.95)')
-        head.addColorStop(0.35, 'rgba(74,222,128,0.8)')
-        head.addColorStop(1, 'rgba(16,185,129,0)')
-        ctx.fillStyle = head
+        // Growing Right Sprout Bud (Golden Cherry Blossom Bud)
+        ctx.save()
+        const radR = ctx.createRadialGradient(rx, ry, 0, rx, ry, 22)
+        radR.addColorStop(0, '#ffffff')
+        radR.addColorStop(0.4, '#fbbf24')
+        radR.addColorStop(1, 'rgba(217, 119, 6, 0)')
+        ctx.fillStyle = radR
         ctx.beginPath()
-        ctx.arc(hx, hy, 34, 0, Math.PI * 2)
+        ctx.arc(rx, ry, 22, 0, Math.PI * 2)
         ctx.fill()
+        drawSakuraFlower(rx, ry, 7, 0.7, now * 0.003)
+        ctx.restore()
 
-        ctx.fillStyle = 'rgba(250,204,21,1)'
+        // Growing Left Sprout Bud (Emerald Bamboo Leaf Bud)
+        ctx.save()
+        const radL = ctx.createRadialGradient(lx, ly, 0, lx, ly, 22)
+        radL.addColorStop(0, '#ffffff')
+        radL.addColorStop(0.4, '#34d399')
+        radL.addColorStop(1, 'rgba(16, 185, 129, 0)')
+        ctx.fillStyle = radL
         ctx.beginPath()
-        ctx.arc(hx, hy, 2.4, 0, Math.PI * 2)
+        ctx.arc(lx, ly, 22, 0, Math.PI * 2)
         ctx.fill()
-
-        if (now - lastPandaAt > 240) {
-          spawnPanda(hx, hy)
-          lastPandaAt = now
-        }
+        drawBambooCluster(lx, ly, 8, 0.7, -now * 0.003)
+        ctx.restore()
+      } else if (!crestBloomed) {
+        // Vines meet at top apex: Bloom Royal Crowning Crest!
+        const apexPt = heartPoint(0)
+        const apexX = cx + apexPt.x * curScale
+        const apexY = cy + apexPt.y * curScale
+        triggerRoyalCrest(apexX, apexY)
+        crestBloomed = true
       }
 
-      ctx.globalCompositeOperation = 'source-over'
-      for (let i = pandas.length - 1; i >= 0; i--) {
-        const panda = pandas[i]
-        panda.life -= panda.decay
+      // ── 3. DRAW BLOOMED BOTANICAL NODES (Sakura & Bamboo) ──
+      botanicalNodes.forEach((node) => {
+        if (node.bloom <= 0) return
 
-        if (panda.life <= 0) {
-          pandas.splice(i, 1)
+        const hp = heartPoint(node.t)
+        const nx = cx + hp.x * curScale
+        const ny = cy + hp.y * curScale
+
+        // Gentle botanical sway
+        const sway = Math.sin(now * 0.0018 + node.swayOffset) * 0.08
+        const finalAngle = node.baseAngle + sway
+
+        if (node.isSakura) {
+          drawSakuraFlower(nx, ny, node.size * breathe, node.bloom, finalAngle)
+        } else {
+          drawBambooCluster(nx, ny, node.size * breathe, node.bloom, finalAngle)
+        }
+      })
+
+      // ── 4. DRAW CROWNING ROYAL SAKURA-BAMBOO CREST (At Top Apex) ──
+      if (progress >= 1) {
+        const apexPt = heartPoint(0)
+        const apexX = cx + apexPt.x * curScale
+        const apexY = cy + apexPt.y * curScale
+
+        // Golden halo behind crest
+        const halo = ctx.createRadialGradient(apexX, apexY, 0, apexX, apexY, 32 * breathe)
+        halo.addColorStop(0, 'rgba(254, 240, 138, 0.85)')
+        halo.addColorStop(0.5, 'rgba(251, 191, 36, 0.4)')
+        halo.addColorStop(1, 'rgba(251, 191, 36, 0)')
+        ctx.fillStyle = halo
+        ctx.beginPath()
+        ctx.arc(apexX, apexY, 32 * breathe, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Central blooming royal sakura blossom
+        drawSakuraFlower(apexX, apexY, 15 * breathe, 1, Math.sin(now * 0.0015) * 0.05)
+
+        // Flanking bamboo shoots
+        drawBambooCluster(apexX - 16 * breathe, apexY + 2, 10 * breathe, 1, -0.6)
+        drawBambooCluster(apexX + 16 * breathe, apexY + 2, 10 * breathe, 1, 0.6)
+      }
+
+      // ── 5. RENDER EXPANDING APEX SHOCKWAVES ──
+      for (let i = shockwaveRings.length - 1; i >= 0; i--) {
+        const sw = shockwaveRings[i]
+        sw.radius += sw.growth
+        sw.opacity -= sw.decay
+
+        if (sw.opacity <= 0 || sw.radius >= sw.maxRadius) {
+          shockwaveRings.splice(i, 1)
           continue
         }
 
         ctx.save()
-        ctx.globalAlpha = Math.max(0, panda.life)
-        ctx.font = `${panda.size}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'middle'
-        ctx.fillText(panda.emoji, panda.x, panda.y)
+        ctx.beginPath()
+        ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2)
+        ctx.strokeStyle = `rgba(${sw.color.r}, ${sw.color.g}, ${sw.color.b}, ${Math.max(0, sw.opacity)})`
+        ctx.lineWidth = 2.4
+        ctx.shadowColor = `rgba(${sw.color.r}, ${sw.color.g}, ${sw.color.b}, 0.7)`
+        ctx.shadowBlur = 10
+        ctx.stroke()
         ctx.restore()
       }
 
-      prevHx = hx
-      prevHy = hy
+      // ── 6. RENDER FLOATING GOLDEN POLLEN MOTES ──
+      for (let i = vinePollen.length - 1; i >= 0; i--) {
+        const p = vinePollen[i]
+        p.x += p.vx
+        p.y += p.vy
+        p.vx *= 0.97
+        p.vy *= 0.97
+        p.alpha -= p.decay
+
+        if (p.alpha <= 0) {
+          vinePollen.splice(i, 1)
+          continue
+        }
+
+        ctx.fillStyle = `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.alpha})`
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size * p.alpha, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // ── 7. RENDER DRIFTING SAKURA PETAL RAIN ──
+      if (fallingPetals.length > 0) {
+        fallingPetals.forEach((petal) => {
+          petal.swayPhase += petal.swaySpeed
+          petal.x += Math.sin(petal.swayPhase) * 0.75 + petal.vx
+          petal.y += petal.vy
+          petal.rotation += petal.rotSpeed
+
+          // Loop petals back to top when reaching bottom
+          if (petal.y > height + 20) {
+            petal.y = -20
+            petal.x = cx + (Math.random() - 0.5) * (stageW * 0.9)
+          }
+
+          ctx.save()
+          ctx.translate(petal.x, petal.y)
+          ctx.rotate(petal.rotation)
+          ctx.globalAlpha = petal.opacity
+
+          // Draw delicate single sakura petal
+          const s = petal.size
+          const petalGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, s)
+          petalGrad.addColorStop(0, '#fde2ec')
+          petalGrad.addColorStop(0.65, '#f472b6')
+          petalGrad.addColorStop(1, '#fda4af')
+
+          ctx.fillStyle = petalGrad
+          ctx.beginPath()
+          ctx.ellipse(0, 0, s * 0.55, s, 0, 0, Math.PI * 2)
+          ctx.fill()
+
+          ctx.restore()
+        })
+      }
+
       raf = requestAnimationFrame(frame)
     }
 
@@ -312,7 +634,7 @@ export default function CakeHeartAnimation({ scaleMultiplier = 0.42, style = {} 
       cancelAnimationFrame(raf)
       window.removeEventListener('resize', resize)
     }
-  }, [scaleMultiplier])
+  }, [scaleMultiplier, started])
 
   return (
     <div
