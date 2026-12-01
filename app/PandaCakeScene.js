@@ -84,45 +84,47 @@ function PandaPortrait({ variant, cx, cy, r }) {
   )
 }
 
-function Candle({ x, y, scale = 1, lit = true, blowing = false, delay = 0 }) {
+function Candle({ x, y = 0, scale = 1, lit, blowing, delay = 0 }) {
   return (
-    <g transform={`translate(${x}, ${y}) scale(${scale})`}>
-      {/* Candle stick */}
-      <rect x="-6" y="0" width="12" height="42" rx="3" fill="url(#cake-candle-grad)" stroke="#d1fae5" strokeWidth="0.8" />
-      {/* Candle stripes */}
-      <path d="M-6 8 L6 14" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
-      <path d="M-6 20 L6 26" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
-      <path d="M-6 32 L6 38" stroke="#fbbf24" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
-      {/* Wick */}
-      <line x1="0" y1="0" x2="0" y2="-7" stroke="#334155" strokeWidth="1.8" strokeLinecap="round" />
+    <g transform={`translate(${x}, ${y})`}>
+      <g transform={`scale(${scale})`}>
+        {/* Candle stick */}
+        <rect x="-5" y="0" width="10" height="38" rx="2" fill="url(#cake-candle-grad)" stroke="#10b981" strokeWidth="0.8" />
+        <rect x="-5" y="0" width="10" height="6" fill="#fff" opacity="0.6" rx="1" />
+        {/* Decorative gold spiral stripes */}
+        <line x1="-5" y1="12" x2="5" y2="12" stroke="#fbbf24" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="-5" y1="22" x2="5" y2="22" stroke="#fbbf24" strokeWidth="1.4" strokeLinecap="round" />
+        <line x1="-5" y1="32" x2="5" y2="32" stroke="#fbbf24" strokeWidth="1.4" strokeLinecap="round" />
+        {/* Wick */}
+        <line x1="0" y1="0" x2="0" y2="-4" stroke="#1e293b" strokeWidth="1.5" strokeLinecap="round" />
 
-      {/* Flame */}
-      {lit && (
-        <g className="cake-candle-flame-group" style={{ animationDelay: `${delay}s` }}>
-          <ellipse cx="0" cy="-20" rx="18" ry="26" fill="url(#cake-flame-glow)" />
-          <path
-            d="M 0 -34 C -7 -22, -9 -14, -6 -9 C -4 -4, 4 -4, 6 -9 C 9 -14, 7 -22, 0 -34 Z"
-            fill="url(#cake-flame-outer)"
-          />
-          <path
-            d="M 0 -26 C -4 -18, -5 -13, -3 -9 C -2 -6, 2 -6, 3 -9 C 5 -13, 4 -18, 0 -26 Z"
-            fill="url(#cake-flame-inner)"
-          />
-        </g>
-      )}
+        {/* Flame */}
+        {lit && (
+          <g
+            className={`cake-flame ${blowing ? 'cake-flame-blow' : ''}`}
+            style={{ transformOrigin: '0px -4px', animationDelay: `${delay}s` }}
+          >
+            <ellipse cx="0" cy="-14" rx="6" ry="12" fill="url(#cake-flame-outer)" />
+            <ellipse cx="0" cy="-12" rx="3.5" ry="8" fill="url(#cake-flame-inner)" />
+            <ellipse cx="0" cy="-10" rx="1.6" ry="3.5" fill="#ffffff" />
+            <circle cx="0" cy="-13" r="16" fill="url(#cake-flame-glow)" opacity="0.7" />
+          </g>
+        )}
 
-      {/* Smoke wisps after blow */}
-      {blowing && (
-        <g className="cake-candle-smoke">
-          <path
-            d="M 0 -8 Q -5 -18 2 -28 T -1 -44 T 4 -58"
-            stroke="rgba(255, 255, 255, 0.7)"
-            strokeWidth="2"
-            fill="none"
-            strokeLinecap="round"
-          />
-        </g>
-      )}
+        {/* Smoke wisps after blow */}
+        {!lit && (
+          <g className="cake-smoke" style={{ animationDelay: `${delay * 0.35}s` }}>
+            <path
+              d="M -2 -4 Q 1 -10 -2 -16 Q -5 -22 0 -28"
+              stroke="#cbd5e1"
+              strokeWidth="1.8"
+              fill="none"
+              strokeLinecap="round"
+              opacity="0.8"
+            />
+          </g>
+        )}
+      </g>
     </g>
   )
 }
@@ -153,35 +155,37 @@ function TierFrame({ cx, cy, r, panda = 'royal_panda' }) {
 }
 
 export default function PandaCakeScene({ candleBlown = false, name = 'Gg🐼🥰' }) {
-  const [candlesLit, setCandlesLit] = useState(!candleBlown)
   const [showBlowAnimation, setShowBlowAnimation] = useState(false)
 
-  useEffect(() => {
-    if (candleBlown) {
-      setShowBlowAnimation(true)
-      const timer = setTimeout(() => {
-        setCandlesLit(false)
-      }, 350)
-      return () => clearTimeout(timer)
-    } else {
-      setCandlesLit(true)
-      setShowBlowAnimation(false)
-    }
-  }, [candleBlown])
-
   const candleLayout = [
-    { x: 300, y: 228, scale: 1.15, delay: 0 },
-    { x: 265, y: 232, scale: 0.95, delay: 0.2 },
-    { x: 335, y: 232, scale: 0.95, delay: 0.4 },
+    { x: 232, y: 18, scale: 0.82, delay: 0 },
+    { x: 268, y: 10, scale: 0.94, delay: 0.15 },
+    { x: 300, y: 0, scale: 1.12, delay: 0.3 },
+    { x: 332, y: 10, scale: 0.94, delay: 0.45 },
+    { x: 368, y: 18, scale: 0.82, delay: 0.6 },
   ]
 
+  useEffect(() => {
+    if (!candleBlown) {
+      setShowBlowAnimation(false)
+      return
+    }
+
+    setShowBlowAnimation(true)
+    const timeoutId = setTimeout(() => setShowBlowAnimation(false), 650)
+    return () => clearTimeout(timeoutId)
+  }, [candleBlown])
+
+  const candlesLit = !candleBlown || showBlowAnimation
+
   return (
-    <div className="cake-scene-container" style={{ width: '100%', maxWidth: '640px', margin: '0 auto' }}>
+    <div className="cake-scene">
       <svg
-        viewBox="0 0 600 700"
+        viewBox="0 0 600 720"
+        className="cake-panda-svg"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ width: '100%', height: 'auto', overflow: 'visible' }}
         aria-label="Birthday Cake for Gg"
+        role="img"
       >
         <defs>
           <linearGradient id="cake-bottom-tier" x1="0" y1="0" x2="0" y2="1">
@@ -208,26 +212,30 @@ export default function PandaCakeScene({ candleBlown = false, name = 'Gg🐼🥰
             <stop offset="100%" stopColor="#b45309" />
           </linearGradient>
 
-          <linearGradient id="cake-candle-grad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#ecfdf5" />
-            <stop offset="50%" stopColor="#ffffff" />
-            <stop offset="100%" stopColor="#d1fae5" />
+          <linearGradient id="cake-candle-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="35%" stopColor="#ecfdf5" />
+            <stop offset="70%" stopColor="#a7f3d0" />
+            <stop offset="100%" stopColor="#34d399" />
           </linearGradient>
 
           <radialGradient id="cake-flame-outer">
-            <stop offset="0%" stopColor="#fef08a" />
-            <stop offset="60%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#ef4444" stopOpacity="0.8" />
+            <stop offset="0%" stopColor="#fffbeb" />
+            <stop offset="40%" stopColor="#fde047" />
+            <stop offset="75%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
           </radialGradient>
 
           <radialGradient id="cake-flame-inner">
             <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="60%" stopColor="#fef08a" />
             <stop offset="100%" stopColor="#fbbf24" />
           </radialGradient>
 
           <radialGradient id="cake-flame-glow">
             <stop offset="0%" stopColor="#fef08a" stopOpacity="0.85" />
-            <stop offset="100%" stopColor="#fef08a" stopOpacity="0" />
+            <stop offset="50%" stopColor="#fbbf24" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
           </radialGradient>
 
           <linearGradient id="cake-plate-grad" x1="0" y1="0" x2="0" y2="1">
@@ -332,19 +340,21 @@ export default function PandaCakeScene({ candleBlown = false, name = 'Gg🐼🥰
         {/* Cameo: Cozy Panda */}
         <TierFrame cx="300" cy="300" r={42} panda="cozy_panda" />
 
-        {/* Top Cake Topper Deco */}
-        <g transform="translate(300, 225)">
-          <text x="-50" y="0" fontSize="16">🌸</text>
-          <text x="-20" y="-12" fontSize="18">🎋</text>
-          <text x="15" y="-12" fontSize="18">🎋</text>
-          <text x="45" y="0" fontSize="16">🌸</text>
+        {/* Base of candles floral accent on top rim */}
+        <g transform="translate(300, 240)">
+          <circle cx="-80" cy="0" r="3.5" fill="#fbbf24" opacity="0.8" />
+          <circle cx="80" cy="0" r="3.5" fill="#fbbf24" opacity="0.8" />
+          <text x="-60" y="4" fontSize="13" textAnchor="middle">🌸</text>
+          <text x="-20" y="6" fontSize="12" textAnchor="middle">🎋</text>
+          <text x="20" y="6" fontSize="12" textAnchor="middle">🎋</text>
+          <text x="60" y="4" fontSize="13" textAnchor="middle">🌸</text>
         </g>
 
-        {/* Candles */}
+        {/* Candles sitting cleanly on top tier rim */}
         <g transform="translate(0, 195)">
           {candleLayout.map((candle) => (
             <Candle
-              key={`${candle.x}-${candle.scale}`}
+              key={`${candle.x}-${candle.delay}`}
               x={candle.x}
               y={candle.y}
               scale={candle.scale}

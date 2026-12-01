@@ -140,6 +140,33 @@
   padding-bottom: clamp(8px, 2vh, 20px);
 }
 
+.cake-scene {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 30px 50px rgba(0,0,0,0.55));
+}
+
+.cake-panda-svg {
+  display: block;
+  width: min(88vw, 45vh);
+  height: auto;
+}
+
+.cake-flame {
+  transform-origin: center bottom;
+  animation: cakeFlameFlicker 0.18s infinite alternate ease-in-out;
+}
+
+.cake-flame-blow {
+  animation: cakeFlameBlow 0.08s infinite alternate ease-in-out;
+}
+
+.cake-smoke {
+  animation: cakeSmokeRise 1.6s ease-out infinite;
+}
+
 .cake-candle-flame-group {
   transform-origin: center bottom;
   animation: cakeFlameFlicker 0.18s infinite alternate ease-in-out;

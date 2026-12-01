@@ -522,8 +522,8 @@ export default function BirthdayPage() {
             <CakeHeartAnimation scaleMultiplier={1.05} style={{ zIndex: -1 }} />
             <div className="cake-header">
               <p className="cake-eyebrow">✨ A Very Special Birthday Celebration ✨</p>
-              <h2 className="cake-title">Make a Wish, Gg🐼!</h2>
-              <p className="cake-sub">Phoonk maar ke apni wish maango 🌟🎋</p>
+              <h2 className="cake-title">Make a Wish, Gg!</h2>
+              <p className="cake-sub">Phoonk maar ke apni wish maango Gg🐼 🌟🎋</p>
             </div>
 
             <div className="cake-heart-stage">
