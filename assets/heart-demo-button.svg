@@ -1,0 +1,61 @@
+<svg width="520" height="190" viewBox="0 0 520 190" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Open Bhalu Birthday Surprise">
+  <defs>
+    <linearGradient id="heartFill" x1="124" y1="12" x2="396" y2="174" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff9ccc"/>
+      <stop offset="0.42" stop-color="#ff4f9f"/>
+      <stop offset="1" stop-color="#d41467"/>
+    </linearGradient>
+    <linearGradient id="heartShine" x1="144" y1="20" x2="292" y2="112" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff7fb" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#fff7fb" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softShadow" x="58" y="-8" width="404" height="210" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="11" flood-color="#8b1e4d" flood-opacity="0.42"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="10" flood-color="#ff7ab6" flood-opacity="0.62"/>
+    </filter>
+    <filter id="textLift" x="120" y="42" width="280" height="102" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#8a0f47" flood-opacity="0.75"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <path
+      d="M260 174C246 157 86 80 86 39C86 16 105 8 128 8C178 8 221 43 260 86C299 43 342 8 392 8C415 8 434 16 434 39C434 80 274 157 260 174Z"
+      fill="url(#heartFill)"
+      stroke="#ffe3ef"
+      stroke-width="6"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M132 31C156 18 193 26 235 69C197 48 166 43 139 50C117 56 104 69 99 82C95 61 106 44 132 31Z"
+      fill="url(#heartShine)"
+      opacity="0.86"
+    />
+    <path
+      d="M384 24C404 25 418 33 421 48C405 35 384 34 360 43C331 54 303 77 277 105C311 61 346 22 384 24Z"
+      fill="#ffe6f2"
+      opacity="0.22"
+    />
+    <path
+      d="M260 137C249 125 143 77 143 54C143 42 154 38 168 39C199 40 229 61 260 93C291 61 321 40 352 39C366 38 377 42 377 54C377 77 271 125 260 137Z"
+      fill="#8a0f47"
+      opacity="0.22"
+    />
+  </g>
+
+  <g filter="url(#textLift)">
+    <text x="260" y="78" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="900" fill="#ffffff" stroke="#9a1450" stroke-width="0.8" paint-order="stroke">
+      Open Bhalu
+    </text>
+    <text x="260" y="107" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="25" font-weight="900" fill="#ffffff" stroke="#9a1450" stroke-width="0.8" paint-order="stroke">
+      Birthday Surprise
+    </text>
+    <text x="260" y="132" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="800" fill="#fff0f7" stroke="#9a1450" stroke-width="0.4" paint-order="stroke">
+      View live demo on Vercel
+    </text>
+  </g>
+
+  <circle cx="226" cy="151" r="5" fill="#ffe6f2"/>
+  <path d="M260 156C258 153 244 147 244 141C244 137 247 135 251 135C255 135 258 138 260 141C262 138 265 135 269 135C273 135 276 137 276 141C276 147 262 153 260 156Z" fill="#fff7fb"/>
+  <circle cx="294" cy="151" r="5" fill="#ffe6f2"/>
+</svg>
