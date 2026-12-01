@@ -150,8 +150,26 @@
 
 .cake-panda-svg {
   display: block;
-  width: min(88vw, 45vh);
+  width: min(92vw, 52vh);
   height: auto;
+}
+
+@media (min-width: 600px) {
+  .cake-panda-svg {
+    width: min(72vw, 56vh);
+  }
+}
+
+@media (min-width: 900px) {
+  .cake-panda-svg {
+    width: min(56vw, 60vh);
+  }
+}
+
+@media (min-width: 1280px) {
+  .cake-panda-svg {
+    width: min(44vw, 64vh);
+  }
 }
 
 .cake-flame {
