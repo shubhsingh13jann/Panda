@@ -142,6 +142,9 @@
 
 .cake-scene {
   position: relative;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -150,25 +153,19 @@
 
 .cake-panda-svg {
   display: block;
-  width: min(92vw, 52vh);
+  width: 100%;
+  max-width: 680px;
   height: auto;
+  aspect-ratio: 600 / 720;
+  overflow: visible;
 }
 
-@media (min-width: 600px) {
-  .cake-panda-svg {
-    width: min(72vw, 56vh);
+@media (min-width: 768px) {
+  .cake-scene {
+    max-width: 700px;
   }
-}
-
-@media (min-width: 900px) {
   .cake-panda-svg {
-    width: min(56vw, 60vh);
-  }
-}
-
-@media (min-width: 1280px) {
-  .cake-panda-svg {
-    width: min(44vw, 64vh);
+    max-width: 700px;
   }
 }
 

@@ -179,11 +179,29 @@ export default function PandaCakeScene({ candleBlown = false, name = 'Gg🐼🥰
   const candlesLit = !candleBlown || showBlowAnimation
 
   return (
-    <div className="cake-scene">
+    <div
+      className="cake-scene"
+      style={{
+        width: '100%',
+        maxWidth: '680px',
+        margin: '0 auto',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+      }}
+    >
       <svg
         viewBox="0 0 600 720"
         className="cake-panda-svg"
         xmlns="http://www.w3.org/2000/svg"
+        style={{
+          width: '100%',
+          height: 'auto',
+          aspectRatio: '600 / 720',
+          overflow: 'visible',
+          display: 'block',
+        }}
         aria-label="Birthday Cake for Gg"
         role="img"
       >
