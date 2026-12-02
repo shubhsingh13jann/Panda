@@ -132,29 +132,28 @@
 .cake-heart-stage {
   position: relative;
   width: 100%;
-  min-height: clamp(360px, 58vh, 640px);
+  min-height: clamp(320px, 52vh, 560px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-top: clamp(40px, 8vh, 88px);
-  padding-bottom: clamp(8px, 2vh, 20px);
+  padding-top: clamp(16px, 3vh, 32px);
+  padding-bottom: clamp(6px, 1.5vh, 14px);
 }
 
 .cake-scene {
   position: relative;
   width: 100%;
-  max-width: 680px;
+  max-width: 622px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: drop-shadow(0 30px 50px rgba(0,0,0,0.55));
+  filter: drop-shadow(0 25px 45px rgba(0,0,0,0.5));
 }
 
 .cake-panda-svg {
   display: block;
-  width: 100%;
-  max-width: 680px;
+  width: min(84vw, 49vh, 592px);
   height: auto;
   aspect-ratio: 600 / 720;
   overflow: visible;
@@ -162,10 +161,19 @@
 
 @media (min-width: 768px) {
   .cake-scene {
-    max-width: 700px;
+    max-width: 642px;
   }
   .cake-panda-svg {
-    max-width: 700px;
+    width: min(71vw, 51vh, 612px);
+  }
+}
+
+@media (min-width: 1200px) {
+  .cake-scene {
+    max-width: 652px;
+  }
+  .cake-panda-svg {
+    width: min(46vw, 55vh, 622px);
   }
 }
 

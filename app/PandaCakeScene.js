@@ -183,7 +183,7 @@ export default function PandaCakeScene({ candleBlown = false, name = 'Gg🐼🥰
       className="cake-scene"
       style={{
         width: '100%',
-        maxWidth: '680px',
+        maxWidth: '622px',
         margin: '0 auto',
         display: 'flex',
         alignItems: 'center',
@@ -196,7 +196,7 @@ export default function PandaCakeScene({ candleBlown = false, name = 'Gg🐼🥰
         className="cake-panda-svg"
         xmlns="http://www.w3.org/2000/svg"
         style={{
-          width: '100%',
+          width: 'min(84vw, 49vh, 592px)',
           height: 'auto',
           aspectRatio: '600 / 720',
           overflow: 'visible',
