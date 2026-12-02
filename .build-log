@@ -1,2 +1,3 @@
 [2026-12-01T18:45:00] chore(deps): install framer-motion, three.js and react-three packages
 [2026-12-02T10:30:00] style(theme): establish panda color palette and css custom properties
+[2026-12-02T19:00:00] style(typography): configure google fonts and typography scales
